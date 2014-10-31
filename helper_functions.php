@@ -4,7 +4,7 @@
 
 //Problems like NaCl + AgCl not working
 
-//Even balanced thigns like 2 K3PO4 (aq)  +  3 MgCl2 (aq) cause errors in the explanation
+//Even balanced things like 2 K3PO4 (aq)  +  3 MgCl2 (aq) cause errors in the explanation
 
 //AgNO3 + Na2S does not work
 
