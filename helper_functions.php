@@ -296,6 +296,7 @@ function matchAtoms($cation, $anion){
 //Function that takes an input of a string of molecules and a split level. Split level 0 = split only on the molecular level. Split level 1 = split up things such as Cl2
 function processMolecules($molecules, $level){
 	
+	//Right now polyatomics array needs to be added each time its used in a function - not economic. Could be included in periodic table file?
 	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
 	
 	//Array to hold atoms before there numbers (i.e. Cl2) are taken into account
@@ -304,9 +305,11 @@ function processMolecules($molecules, $level){
 		
 		//Push the individual atoms to the end of the array
 		foreach($polyatomics as $poly){
+			
 			$pos = strpos($molecule, $poly);
-			//echo $pos;
+			
 			if($pos !== false){
+				
 				//Special case: if there is a polyatomic with subscript creates issues, like Ba(NO3)2.
 				$num = substr($molecule, $pos + strlen($poly), $pos + strlen($poly) + 1);
 				if(is_numeric($num)){
@@ -320,6 +323,7 @@ function processMolecules($molecules, $level){
 			}
 		}
 		
+		//Substrings past the first character, then searches for the next upercase letter to find the next atom.
 		array_push($temp_atoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1));
 	}
 	
@@ -501,6 +505,8 @@ function orderIons($first, $second){
 }
 
 function isSoluble($cation, $anion){
+	
+	//Needs to be adjusted for varying cation charge i.e. Ba(OH)2 IS soluble but BaOH is NOT.
 	
 	$to_return = array();
 	$halides = array('F', 'Cl', 'Br', 'I');
