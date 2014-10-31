@@ -37,7 +37,7 @@ $page_title = 'Home';
 //error_reporting(E_ALL & ~E_NOTICE);
 
 //Require page that contains funcitons used in parsing the equation
-require('helper_functions2.php');
+require('helper_functions.php');
 //Require access to periodic table
 require('periodic_table.php');
 

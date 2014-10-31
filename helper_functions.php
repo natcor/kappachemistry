@@ -10,66 +10,19 @@
 
 //Checks if a precipitation reaction is possible
 
-function checkPrecip($reactants, $add = 'null', $work = ''){
+function checkPrecip($reactants, $add = 'null'){
 	
 	//Change this value to TRUE to trigger print_r and echo statements throughout
 	$debug = FALSE;
 	$deep_debug = FALSE;
 	
-	//To show work
-	if($work == ''){
-		$work = array();
-	}
-	
 	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
-
-	//Split reactants into molecules
-	$molecules = explode('+', $reactants);
 	
-	//Array for if moles changed while balancing
-	$altered_reactants = '';
+	//Store molecule form of equation in result variable
+	$molecule_output = getWholeMolecules($reactants, $add);
 	
-	//Array for molecules seperated from coefficients
-	$edited_molecules = array();
-
-	foreach($molecules as $molecule){
-		
-		//Remove and parenthesis or spaces
-		$molecule = str_replace('(', '', $molecule);
-		$molecule = str_replace(')', '', $molecule);
-		$molecule = str_replace(' ', '', $molecule);
-		
-		//For balancing purposes, increase the moles of one reactant specified in the function call
-		if(is_numeric( (strpos($molecule, $add)) ) ){
-		
-			if(is_numeric(substr($molecule, 0, 1))){
-				$num = substr($molecule, 0, 1);
-				$num++;
-				$molecule = $num . substr($molecule, 1);
-			}else{
-				$molecule = '2' . $molecule;
-			}
-		}
-		//Add molecule to altered reactants array, there will be a trailing plus
-		$altered_reactants .=  $molecule . ' + ';
-		
-		$ante = substr($molecule, 0, 1);
-		
-		//If the coefficient is a number  !NOTE! IF COEFFICIENT IS > 9 WILL NOT WORK! MUST FIX!
-		if(is_numeric($ante)){	
-			//Take off the coefficient and add it the appropriate number of times to new array
-			for($i = 0; $i < (int)$ante; $i++){
-				$edited_molecules[] = str_replace($ante, '', $molecule);
-			}
-			
-		}else{
-			$edited_molecules[] = $molecule;
-		}
-		
-	}
-	
-	//Take off the trailing plus sign
-	$altered_reactants = substr($altered_reactants, 0, -2);
+	$edited_molecules = $molecule_output[0];
+	$altered_reactants = $molecule_output[1];
 	
 	if($debug){
 		echo '<p><b>Edited Molecules:</b> ';
@@ -82,58 +35,7 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 	}
 	
 	//Split into individual atoms/polyatomics
-	//Array to hold atoms before there numbers (i.e. Cl2) are taken into account
-	$temp_atoms = array();
-	foreach($edited_molecules as $molecule){
-		
-		//Push the individual atoms to the end of the array
-		foreach($polyatomics as $poly){
-			$pos = strpos($molecule, $poly);
-			//echo $pos;
-			if($pos !== false){
-				//Special case: if there is a polyatomic with subscript creates issues, like Ba(NO3)2.
-				$num = substr($molecule, $pos + strlen($poly), $pos + strlen($poly) + 1);
-				if(is_numeric($num)){
-					array_push($temp_atoms, substr($molecule, $pos, ($pos + strlen($poly) + 1)) );
-				}else{
-					$num = '';
-					array_push($temp_atoms, substr($molecule, $pos, $pos + strlen($poly)) );
-				}
-				$whole = $poly . $num;
-				$molecule = str_replace($whole, '', $molecule);
-			}
-		}
-		
-		
-		array_push($temp_atoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1));
-	}
-	
-	$temp_atoms = array_filter($temp_atoms);
-	
-	//Array to hold final atoms
-	$atoms = array();
-	foreach($temp_atoms as $atom){
-		if(!in_array($atom, $polyatomics)){
-			
-			$last = substr($atom, -1, 1);
-			if(is_numeric($last)){
-				for($i = 0; $i < $last; $i++){
-					$atoms[] = substr($atom, 0, -1);
-				}
-			}else{
-				$atoms[] = $atom;
-			}
-		}else{
-			$atoms[] = $atom;
-		}
-
-	}
-	
-	if($debug && $deep_debug){
-		echo '<p>Atoms Array: ';
-		print_r($atoms);
-		echo '</p>';
-	}
+	$atoms = processMolecules($edited_molecules, 1);
 	
 	//Check the solubility of the atoms with eachother
 	$precipitates = array();
@@ -141,23 +43,22 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 		foreach($atoms as $right){
 			//If one is an anion and one is a cation, in the proper order
 			if(orderIons($left, $right) == 0){
-				if(isSoluble($left, $right)[0] != true){
+				if(!isSoluble($left, $right)){
 					
-					$value = isSoluble($left, $right);
-					$work[] = $value[1];
-					//echo '<p>Precipates: ' . $left . $right . '</p>';
+					
 					$precipitates[] = $left;
 					$precipitates[] = $right;
 				}
 			}
 		}
 	}
+	
 	//Remove duplicates from precipitation array
 	$precipitates = array_unique($precipitates);
 	
 	//If in debugging mode
 	if($debug){
-		echo '<p>Precipitate Array (Line 92): ';
+		echo '<p>Precipitate Array (Line 62: ';
 		print_r($precipitates);
 		echo '</p>';
 	}
@@ -181,7 +82,7 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 				$c_multiplier = 1;
 			}
 			
-			$work[] = $precipitates[0] . ' takes a ' . $c_ion . 'charge, ' . $precipitates[1] . ' takes a ' . $a_ion . ' charge. Therefore, the ration of cation:anion for the precipitate must be ' . $c_multiplier . ':' . $a_multiplier . '.';
+			$_SESSION['work'][] = $precipitates[0] . ' takes a ' . $c_ion . 'charge, ' . $precipitates[1] . ' takes a ' . $a_ion . ' charge. Therefore, the ration of cation:anion for the precipitate must be ' . $c_multiplier . ':' . $a_multiplier . '.';
 			
 			
 		}else{
@@ -196,7 +97,7 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 				$a_multiplier = 1;
 			}
 			
-			$work[] = $precipitates[1] . ' takes a ' . $a_ion . ' charge, ' . $precipitates[0] . ' takes a ' . $c_ion . ' charge. Therefore, the ration of cation:anion must be ' . $a_multiplier . ':' . $c_multiplier . '.';
+			$_SESSION['work'][] = $precipitates[1] . ' takes a ' . $a_ion . ' charge, ' . $precipitates[0] . ' takes a ' . $c_ion . ' charge. Therefore, the ration of cation:anion must be ' . $a_multiplier . ':' . $c_multiplier . '.';
 			
 		}
 		
@@ -272,17 +173,17 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 					if($debug){
 						echo "<p>Needs More $precipitates[0]";
 					}
-					$work[] = 'Requires more ' . $precipitates[0] . ' to balance the reation.';
+					$_SESSION['work'][] = 'Requires more ' . $precipitates[0] . ' to balance the reation.';
 				
-					return array($precipitates[0], $work);
+					return array($precipitates[0], $_SESSION['work']);
 					
 				}else{
 					if($debug){
 						echo "<p>Needs More $precipitates[1]";
 					}
 		
-					$work[] = 'Requires more ' . $precipitates[1] . ' to balance the reation.';
-					return array($precipitates[1], $work);
+					$_SESSION['work'][] = 'Requires more ' . $precipitates[1] . ' to balance the reation.';
+					return array($precipitates[1], $_SESSION['work']);
 				}
 			}
 			
@@ -302,29 +203,8 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 				$a_hold = '';
 			}
 			
-			//If one of them is a polyatomic, add parenthesis
-			if(in_array($precipitates[0], $polyatomics)){
-				if($c_hold > 1){
-					$precipitates[0] = '(' . $precipitates[0] . ')';
-				}
-				$spot = strcspn($precipitates[0], '123456789');
-				$sub = $precipitates[0]{$spot};
-				$precipitates[0] = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $precipitates[0]);
-			}
-			if(in_array($precipitates[1], $polyatomics)){
-				if($a_hold > 1){
-					$precipitates[1] = '(' . $precipitates[1] . ')';
-				}
-				
-				$spot = strcspn($precipitates[1], '123456789');
-				$sub = $precipitates[1]{$spot};
-				$precipitates[1] = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $precipitates[1]);
-			
-			}
-			
-			
 			//Add to products array
-			$products = $precipitate_count . $precipitates[0] . "<sub class = 'small'>$c_hold</sub>" . $precipitates[1] . "<sub class = 'small'>$a_hold</sub>" . '<sub class = "small">(s)</sub>';
+			$products = formatEquation($precipitate_count . $precipitates[0] . "<sub class = 'small'>$c_hold</sub>" . $precipitates[1] . "<sub class = 'small'>$a_hold</sub>") .'<sub class = "small">(s)</sub>';
 		}
 		
 		$atoms = array_filter($atoms);
@@ -352,19 +232,127 @@ function checkPrecip($reactants, $add = 'null', $work = ''){
 			$products .= ' + ' . $number . $atom . '<sup class = "small">' . $charge . '</sup>' . '<sub class = "small">(aq)</sub>';
 		}
 		
-		$string = formatEquation($altered_reactants) . ' --> ' . $products;
+		$string = formatEquation($altered_reactants) . ' <img src="reaction_arrow.png"/> ' . $products;
 		
-		$return_array = array($string, $work);
+		$return_array = array($string, $_SESSION['work']);
 		
 		return $return_array;
 		
 	}
 	if(count($precipitates == 0)){
-		return array(formatEquation($altered_reactants) . '-->' . 'No Precipitation Reaction', $work);
+		return array(formatEquation($altered_reactants) . '-->' . 'No Precipitation Reaction', $_SESSION['work']);
 	}
 	return -1;
 }
-function getMolecules($equation){
+
+//Takes input if two atoms and returns them in the correct charge ratios
+function matchAtoms($cation, $anion){
+	$atoms = array();
+	
+	//get ion information
+	$c_ion = getTable($cation, 'ion');
+	$a_ion = getTable($anion, 'ion');
+	
+	if(abs($c_ion) > abs($a_ion)){
+		
+		//Find ration between cation and anion if cation is larger charge
+		$a_multiplier = $c_ion/abs($a_ion);
+		
+		if(is_float($a_multiplier)){
+			$lcd = $c_ion * abs($a_ion);
+			$a_multiplier = $lcd / abs($a_ion);
+			$c_multiplier = $lcd / $c_ion;
+		}else{
+			$c_multiplier = 1;
+		}
+		
+		$_SESSION['work'][] = $precipitates[0] . ' takes a ' . $c_ion . 'charge, ' . $precipitates[1] . ' takes a ' . $a_ion . ' charge. Therefore, the ration of cation:anion for the precipitate must be ' . $c_multiplier . ':' . $a_multiplier . '.';
+		
+		array_push($atoms, $cation . $c_multiplier, $anion . $a_multiplier); 
+		
+		
+	}else{
+		//Find ration between cation and anion if anion is larger charge
+		$c_multiplier = abs($a_ion)/abs($c_ion);
+		
+		if(is_float($c_multiplier)){
+			$lcd = $c_ion * abs($a_ion);
+			$c_multiplier = $lcd / $c_ion;
+			$a_multiplier = $lcd / abs($a_ion);
+		}else{
+			$a_multiplier = 1;
+		}
+		
+		$_SESSION['work'][] = $precipitates[1] . ' takes a ' . $a_ion . ' charge, ' . $precipitates[0] . ' takes a ' . $c_ion . ' charge. Therefore, the ration of cation:anion must be ' . $a_multiplier . ':' . $c_multiplier . '.';
+		
+		array_push($atoms, $cation . $c_multiplier, $anion . $a_multiplier); 
+		
+	}
+	
+	return $atoms;
+	
+}
+
+//Function that takes an input of a string of molecules and a split level. Split level 0 = split only on the molecular level. Split level 1 = split up things such as Cl2
+function processMolecules($molecules, $level){
+	
+	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
+	
+	//Array to hold atoms before there numbers (i.e. Cl2) are taken into account
+	$temp_atoms = array();
+	foreach($molecules as $molecule){
+		
+		//Push the individual atoms to the end of the array
+		foreach($polyatomics as $poly){
+			$pos = strpos($molecule, $poly);
+			//echo $pos;
+			if($pos !== false){
+				//Special case: if there is a polyatomic with subscript creates issues, like Ba(NO3)2.
+				$num = substr($molecule, $pos + strlen($poly), $pos + strlen($poly) + 1);
+				if(is_numeric($num)){
+					array_push($temp_atoms, substr($molecule, $pos, ($pos + strlen($poly) + 1)) );
+				}else{
+					$num = '';
+					array_push($temp_atoms, substr($molecule, $pos, $pos + strlen($poly)) );
+				}
+				$whole = $poly . $num;
+				$molecule = str_replace($whole, '', $molecule);
+			}
+		}
+		
+		array_push($temp_atoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1));
+	}
+	
+	$temp_atoms = array_filter($temp_atoms);
+	
+	
+	//If the function has been called to split all the way
+	if($level == 1){
+		
+		//Array to hold final atoms
+		$atoms = array();
+		foreach($temp_atoms as $atom){
+			if(!in_array($atom, $polyatomics)){
+			
+				$last = substr($atom, -1, 1);
+				if(is_numeric($last)){
+					for($i = 0; $i < $last; $i++){
+						$atoms[] = substr($atom, 0, -1);
+					}
+				}else{
+					$atoms[] = $atom;
+				}
+			}else{
+				$atoms[] = $atom;
+			}
+		}
+		return $atoms;
+	}
+	return $temp_atoms;
+}
+
+function getWholeMolecules($reactants, $add){
+	
 	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
 
 	//Split reactants into molecules
@@ -394,10 +382,31 @@ function getMolecules($equation){
 				$molecule = '2' . $molecule;
 			}
 		}
+		
 		//Add molecule to altered reactants array, there will be a trailing plus
 		$altered_reactants .=  $molecule . ' + ';
+		
+		$ante = substr($molecule, 0, 1);
+		
+		//If the coefficient is a number  !NOTE! IF COEFFICIENT IS > 9 WILL NOT WORK! MUST FIX!
+		if(is_numeric($ante)){	
+			//Take off the coefficient and add it the appropriate number of times to new array
+			for($i = 0; $i < (int)$ante; $i++){
+				$edited_molecules[] = str_replace($ante, '', $molecule);
+			}
+			
+		}else{
+			$edited_molecules[] = $molecule;
+		}
+		
 	}
+	
+	//Take off the trailing plus sign
+	$altered_reactants = substr($altered_reactants, 0, -2);
+	
+	return array($edited_molecules, $altered_reactants);
 }
+
 function formatEquation($equation){
 	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
 	$formatted = '';
@@ -463,7 +472,7 @@ function formatEquation($equation){
 		
 	}
 	
-	return substr($formatted, 0, -2);
+	return trim(substr($formatted, 0, -2));
 }
 function orderIons($first, $second){
 	
@@ -500,31 +509,31 @@ function isSoluble($cation, $anion){
 	$earth_metals = array('Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra');
 
 	if($anion == 'NO3'){ //All nitrates are soluble
-		$to_return[0] = true;
-		$to_return[1] = $cation . $anion . ' is soluble: All nitrates are soluble.';
-		return $to_return;
+	
+		$_SESSION['work'][] = $cation . $anion . ' is soluble: All nitrates are soluble.';
+		return true;
 	}
 
 	if( (in_array($cation, $soluble)) || (in_array($anion, $soluble)) ){ //If akali metal it is soluble
-		$to_return[0] = true;
-		$to_return[1] = $cation . $anion . ' is soluble: All alkali metals and ammonium salts are soluble';
-		return $to_return;
+		
+		$_SESSION['work'][] = $cation . $anion . ' is soluble: All alkali metals and ammonium salts are soluble';
+		return true;
 	}else{
 		if(in_array($anion, $halides)){ //If a halide is the anion it is soluble, with exceptions 
 			if(!in_array($cation, $halide_exceptions)){ //Check if cation is an exception to the halide solubility rule
-				$to_return[0] = true;
-				$to_return[1] = $cation . $anion . ' is soluble: Most halide salts are soluble (Exceptions: Cu, Pb, Hg<sub class = "small">2</sub>,
+				
+				$_SESSION['work'][] = $cation . $anion . ' is soluble: Most halide salts are soluble (Exceptions: Cu, Pb, Hg<sub class = "small">2</sub>,
 				 Ag)';
-				 return $to_return;
+				 return true;
 			}else{
-				$to_return[0] = false;
-				$to_return[1] = $cation . $anion . ' is insoluble: It is an exception to the halide salts are soluble rule.';
-				return $to_return;
+				
+				$_SESSION['work'][] = $cation . $anion . ' is insoluble: It is an exception to the halide salts are soluble rule.';
+				return false;
+				
 			}
 		}
 	}
-	$to_return[0] = false;
-	$to_retun[1] = '';
-	return $to_return;
+	
+	return false;
 }
 ?>
