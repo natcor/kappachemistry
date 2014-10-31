@@ -71,7 +71,7 @@ function checkPrecip($reactants, $add = 'null'){
 		
 		if(abs($c_ion) > abs($a_ion)){
 			
-			//Find ration between cation and anion if cation is larger charge
+			//Find ration between cation and anion if cation is larger charge <- lolololol nate can't spell
 			$a_multiplier = $c_ion/abs($a_ion);
 			
 			if(is_float($a_multiplier)){
@@ -86,7 +86,7 @@ function checkPrecip($reactants, $add = 'null'){
 			
 			
 		}else{
-			//Find ration between cation and anion if anion is larger charge
+			//Find ration between cation and anion if anion is larger charge <- AGAIN???
 			$c_multiplier = abs($a_ion)/abs($c_ion);
 			
 			if(is_float($c_multiplier)){
