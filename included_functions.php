@@ -68,7 +68,6 @@ function isValid($input){
 		//If the charge is not zero, set an error message and return false
 		if($netCharge !== 0){
 			$_SESSION['errors'] = 'There seems to be something fishy with the equation you entered. Perhaps you never passed basic addition in middle school. That might be it. Check your goddam charges.';
-			
 			return false;
 		}
 	}
@@ -365,8 +364,8 @@ function balanceEquation($reactants, $products){
 	$y = ($w * $a)/$e;
 	$z = ($w * $b)/$h;
 	$x = ($w * $a * $f)/($e * $d);
-	$nums = array($w, $x, $y, $z);
-
+	//$nums = array($w, $x, $y, $z);
+	echo $w . $y . $z . $x;
 	//If possible find greatest common factor of the coefficients
 	$lcd = array_reduce(array($w, $x, $y, $z), 'gcf');
 	if(is_int($lcd)){
@@ -374,14 +373,14 @@ function balanceEquation($reactants, $products){
 		//Simplify coefficients
 		foreach($nums as &$num){
 			$num = $num/$lcd;
-			if($num = 1){
+			if($num == 1){
 				$num = '';
 			}
 		}
 	}
 	
 	//Return formatted equation with state symbols
-	return formatEquation("$nums[0]$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . formatEquation("$nums[1]$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . formatEquation("$nums[2]$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . formatEquation("$nums[2]$products[2]$products[3]") . "<sub class = 'small'>(aq)</sub>";
+	return $nums[0] . formatEquation("$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . $nums[1] . formatEquation("$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . $nums[2] . formatEquation("$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . $nums[2] .  formatEquation("$products[2]$products[3]") . "<sub class = 'small'>(aq)</sub>";
 	
 }
 

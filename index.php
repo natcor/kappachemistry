@@ -53,6 +53,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	$result = getPrecipitation(returnReactants($_POST['equation']));
+	echo $result;
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
 		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';
@@ -61,7 +62,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		}
 		echo '</ul><p>Please fix and re-submit.</p>
 		</div>';
-		//exit;
+	
 	}else{ //No Errors	
 		echo "<div id = 'results'><b>$result</b>";
 		if(count($_SESSION['work']) > 0){
