@@ -1,12 +1,17 @@
 <?php
+
+//Create options to be preset into the search box
 $options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)');
 $num = rand(0, count($options) - 1);
 
+//Start the session and set up the variables
 session_start();
-
-$_SESSION['work'] = array();
+$_SESSION['work'] = array(); //Variable to hold work to be shown
+$_SESSION['errors'] = array();  //Variable to hold errors throughout
+$_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
 
 ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -31,69 +36,38 @@ $_SESSION['work'] = array();
 
 
 <?php
-$page_title = 'Home';
+$pageTitle = 'Home';
 
-//Set error reporting
-//error_reporting(E_ALL & ~E_NOTICE);
-
-//Require page that contains funcitons used in parsing the equation
-require('helper_functions.php');
-//Require access to periodic table
+//Require access to php pages with functions
+require('main_functions.php');
+require('included_functions.php');
 require('periodic_table.php');
 
 //Check for form submission
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	
-	//Create an array to place any errors in
-	$errors = array();
-	
-	$e = ''; //Variable that holds reaction text
-	
-	//Validate entry - it does not matter at this point if it is non-malicious since it is not being placed into a database
+	//Ensure that the user entered something
 	if(empty($_POST['equation'])){
-		$errors[] = 'Please enter an equation. I\'m not about that empty equation life.';
-	}else{
-		$e = ' ' . $_POST['equation'];
+		$_SESSION['errors'] = 'Please enter an equation. When you don\'t enter and equation, somewhere in Africa someone contracts ebola.';
 	}
 	
-	//Check if equation has reaction sign
-	$possible_signs = array('-->', '->', '>', '=', 'goes to', 'to');
+	//Remove any reaction arrows from equation and run it through the check precipitation function
+	$result = testPrecipitation(returnReactants($_POST['equation']));
 	
-	//Loop through all the possible reaction signs to check if any of them are present
-	$count = 0;
-	$reaction_sign = ''; //Value that holds which type of reaction error user typed
-	
-	foreach($possible_signs as $sign){
-		if(strpos($e, $sign)){
-			$reaction_sign = $sign;
-			break;
-		};
-	}
-	
+	echo $result;
+	/*
+	if($result[0] != -1){
+		$safety = 0;
+		while( (!is_numeric(strpos($result[0], '<img src="reaction_arrow.png"/>'))) && ($safety < 25)){
+			$safety++;
+			$result = checkPrecip($e, $result[0], $result[1]);
+		}
+		if($safety >= 24){
+			$errors[] = 'The equation you have entered is impossible to balance. Please review for errors.';
+		}
+	}		
 	
 		
-	//Split the string into to parts at the reaction arrow
-	if($reaction_sign != ''){
-		$e_split = explode($reaction_sign, $e);
-	}else{
-		$e_split = array($e, '');
-	}
-	
-	//If there is nothing on the right side, predict the products
-	if(strlen(trim($e_split[1])) == 0){
-		$result = checkPrecip($e_split[0]);
-		
-		if($result[0] != -1){
-			$safety = 0;
-			while( (!is_numeric(strpos($result[0], '<img src="reaction_arrow.png"/>'))) && ($safety < 25)){
-				$safety++;
-				$result = checkPrecip($e, $result[0], $result[1]);
-			}
-			if($safety >= 24){
-				$errors[] = 'The equation you have entered is impossible to balance. Please review for errors.';
-			}
-		}		
-	}
 	
 	if(!empty($errors)){ //If there are items in the errors array
 		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';
@@ -115,10 +89,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		}
 		echo "</ul></div></div>";
 	}
-	
+	*/
 	
 }
+
+//Unset all the session variables
+session_unset();
+
 ?>
+
 </div>
 </div>
 </div>
