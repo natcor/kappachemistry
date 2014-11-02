@@ -48,7 +48,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	
 	//Ensure that the user entered something
 	if(empty($_POST['equation'])){
+<<<<<<< HEAD
 		$_SESSION['errors'][] = 'Please enter an equation. When you don\'t enter and equation, somewhere in Africa someone contracts ebola.';
+=======
+		$_SESSION['errors'] = 'Please enter an equation. When you don\'t enter an equation, somewhere in Africa someone contracts Ebola.'; // 'AN' NOT 'AND', CAN U TYPE ALSO EBOLA IS CAPITALIZED
+>>>>>>> FETCH_HEAD
 	}
 
 	//Remove any reaction arrows from equation and run it through the check precipitation function

@@ -15,6 +15,13 @@ function getPrecipitation($reactants){
 		}
 	}
 	
+	//Check that neither of the reactants is insoluble
+	$compounds = splitEquation($reactants, 2);
+	if(!isSoluble($compounds[0]) || !isSoluble($compounds[1])){
+		echo 'One of these is already a solid, silly.  Good luck trying to mix it.';
+		return $reactants . " --> " . $reactants;
+	}
+	
 	//Split reactants into individual atoms
 	$atoms = splitEquation($reactants);
 	
@@ -49,8 +56,15 @@ function getPrecipitation($reactants){
 		}
 	}
 	
+<<<<<<< HEAD
 	//If only one possible precipitate formed
 	if(count($precipitates) === 1){
+=======
+	//BaCl2 + K2SO4 doesn't work
+	
+	//If only one possible precipitate formed  // is this redundant now?
+	if(count($precipitates == 1)){
+>>>>>>> FETCH_HEAD
 		
 		//Balance the reaction
 		$balancedEquation = balanceEquation($reactants, $precipitates[0] . ' + ' . matchCharges(array_shift($cations), array_shift($anions)) );

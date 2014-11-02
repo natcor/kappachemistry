@@ -250,7 +250,8 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 }
 
 //Takes an input of an anion and a cation atom. Returns a string of them combined in the appropriate ratios for their common charges
-function matchCharges($cation, $anion){
+//Using Peter's better version an array with the actual subscripts for the anion and cation
+function matchCharges($cation, $anion, $usePetersBetterVersion = false){
 	
 	//Get the common charges of the cation. If it is an element with multiple charges, find the correct charge from the global session variable
 	if(is_numeric(getTable($cation, 'charge')) ){
@@ -265,6 +266,10 @@ function matchCharges($cation, $anion){
 	//Find the least common multiple of the two charges, then divide that by the charge to get the multipliers of the atoms
 	$cMult = abs(lcm($cCharge, $aCharge) / $cCharge);
 	$aMult = abs(lcm($cCharge, $aCharge) / $aCharge);
+	
+	if($usePetersBetterVersion){
+		return array('cation' => $cMult, 'anion' => $aMult);
+	}
 	
 	//If the multipliers are one replace them with an empty string
 	if($cMult == 1){
@@ -293,7 +298,7 @@ function isSoluble($molecule){
 	$halide_exceptions = array('Cu', 'Pb', 'Hg', 'Ag');
 	$soluble = array('(NH4)', '(NO3)', '(ClO3)', '(ClO4)', '(C2H3O2)', '(CH3COO)');
 	$halide_exceptions = array('Ag' => 1, 'Pb' => 2, 'Hg2' => 2, 'Cu' => 1); //Format is atom => charge
-	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2'); //Ba is 2+, Sr
+	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2'); //Ba is 2+, Sr <-- lololol nate comes through in the clutch w/ another brilliant comment.  Ba is always 2+
 	$hydroxide_exceptions = array('Ba', 'Ca', 'Sr');
 	
 	//Add all alkali metals to the $soluble array
@@ -302,7 +307,6 @@ function isSoluble($molecule){
 			$soluble[] = $alkali;
 		}
 	}
-	
 	//If any of the always soluble atoms are in the molecule, return true
 	foreach($soluble as $atom){
 		
@@ -492,6 +496,10 @@ function formatEquation($equation){
 	}
 	
 	return trim(substr($formatted, 0, -2));
+	
+	
+	//Remove any coefficients
+	echo $reactants . ' --> ' . $products;
 }
 
 //Function that returns the greatest common factor of two values
