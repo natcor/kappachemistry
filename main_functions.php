@@ -1,6 +1,6 @@
 <?php
 
-function testPrecipitation($reactants){
+function getPrecipitation($reactants){
 	
 	//Check if the reaction is valid for a precipitation (i.e. if the charges of the atoms match)
 	if(!isValid($reactants)){
@@ -42,10 +42,14 @@ function testPrecipitation($reactants){
 		}
 	}
 	
+	//BaCl2 + K2SO4 doesn't work
+	
 	//If only one possible precipitate formed
 	if(count($precipitates == 1)){
 		
+		//Balance the reaction
 		$balancedEquation = balanceEquation($reactants, $precipitates[0] . ' + ' . matchCharges(array_shift($cations), array_shift($anions)) );
+		return $balancedEquation;
 	}else{
 		echo 'Two precipitates could form! Or you put in something solid in the reactants.';
 	}

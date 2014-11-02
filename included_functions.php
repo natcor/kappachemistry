@@ -145,6 +145,9 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 		//Check if the molecule will break apart in water (if $accountSolublity set to true)
 		if( ($ignoreSolublity) || (isSoluble($molecule)) ){
 			
+			//Variable that holds value to be pushed into array later
+			$toPush = '';
+			
 			//Push the individual atoms to the end of the array
 			foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
 			
@@ -173,10 +176,23 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 				
 					//If the character after the polytomic is a number, ensure to push the number with the molecule
 					if(is_numeric($num)){
-						array_push($rawAtoms, substr($molecule, $pos, ($pos + strlen($poly) + 1)) );
+						
+						//If the polyatomic is not the first atom
+						if($pos > 0){
+							$toPush = substr($molecule, $pos, ($pos + strlen($poly) + 1));
+						}else{
+							$rawAtoms[] = substr($molecule, $pos, ($pos + strlen($poly) + 1));
+						}
+						
 					}else{
 						$num = '';
-						array_push($rawAtoms, substr($molecule, $pos, $pos + strlen($poly)) );
+						if($pos > 0){
+							$toPush = substr($molecule, $pos, $pos + strlen($poly));
+						}else{
+							$rawAtoms[] = substr($molecule, $pos, $pos + strlen($poly));
+						}
+						
+						
 					}
 				
 					//Replace the entire molecule including trailing number (if existant) so that it will not be added again
@@ -184,9 +200,14 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 					$molecule = str_replace($whole, '', $molecule);
 				}
 			}
-		
+			
 			//Substrings past the first character, then searches for the next upercase letter to find the next atom.
 			array_push($rawAtoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1));
+			
+			//Push the polyatomic afterward
+			if($toPush != ''){
+				$rawAtoms[] = $toPush;
+			}
 		
 		}
 	}
@@ -325,8 +346,112 @@ function isSoluble($molecule){
 //Takes input reactants and products, both strings. Outputs a complete string that is the balanced equation, using --> as a yields symbol
 function balanceEquation($reactants, $products){
 	
-	//Remove any coefficients
-	echo $reactants . ' --> ' . $products;
+	//Remove any coefficients and split to molecules
+	$reactants = array_values(array_unique(splitEquation($reactants, 3)));
+	$products = array_values(array_unique(splitEquation($products, 3)));
+	
+	//Assign values to trailing numbers uses ternary operator
+	$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
+	$b = (is_numeric(substr(trim($reactants[1]), -1, 1)) ? $b = substr(trim($reactants[1]), -1, 1) : $b = 1);
+	$c = (is_numeric(substr(trim($reactants[2]), -1, 1)) ? $c = substr(trim($reactants[2]), -1, 1) : $c = 1);
+	$d = (is_numeric(substr(trim($reactants[3]), -1, 1)) ? $d = substr(trim($reactants[3]), -1, 1) : $d = 1);
+	
+	$e = (is_numeric(substr(trim($products[0]), -1, 1)) ? $e = substr(trim($products[0]), -1, 1) : $e = 1);
+	$f = (is_numeric(substr(trim($products[1]), -1, 1)) ? $f = substr(trim($products[1]), -1, 1) : $f = 1);
+	$g = (is_numeric(substr(trim($products[2]), -1, 1)) ? $g = substr(trim($products[2]), -1, 1) : $g = 1);
+	$h = (is_numeric(substr(trim($products[3]), -1, 1)) ? $h = substr(trim($products[3]), -1, 1) : $h = 1);
+	
+	$w = 12;
+	$y = ($w * $a)/$e;
+	$z = ($w * $b)/$h;
+	$x = ($w * $a * $f)/($e * $d);
+	$nums = array($w, $x, $y, $z);
+
+	//If possible find greatest common factor of the coefficients
+	$lcd = array_reduce(array($w, $x, $y, $z), 'gcf');
+	if(is_int($lcd)){
+		
+		//Simplify coefficients
+		foreach($nums as &$num){
+			$num = $num/$lcd;
+			if($num = 1){
+				$num = '';
+			}
+		}
+	}
+	
+	//Return formatted equation with state symbols
+	return formatEquation("$nums[0]$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . formatEquation("$nums[1]$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . formatEquation("$nums[2]$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . formatEquation("$nums[2]$products[2]$products[3]") . "<sub class = 'small'>(aq)</sub>";
+	
+}
+
+//Returns formatted equation
+function formatEquation($equation){
+	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
+	$formatted = '';
+	$molecules = explode('+', $equation);
+	foreach($molecules as $molecule){
+		$molecule = str_replace(' ', '', $molecule); 
+		$ante = '';
+		if(is_numeric(substr($molecule, 0, 1))){
+			$ante = substr($molecule, 0, 1);
+			$molecule = substr($molecule, 1);
+		}
+		
+		//For polyatomics, fix both i.e. (NO3)3 subscripts both 3's
+		foreach($polyatomics as $poly){
+			$pos = strpos($molecule, $poly);
+			if(is_numeric($pos)){
+	
+				$molecule .= ' ';
+				if(is_numeric($molecule{$pos + strlen($poly)}) ){
+					
+					$num = $molecule{($pos + strlen($poly))};
+					
+					if($num <= 1){
+						$num = '';
+					}else{
+						$molecule = str_replace(' ', '', $molecule); 
+						$molecule = substr_replace($molecule, '<sub class = "small">' . $num . '</sub>', -1);
+						$molecule = str_replace($poly, '(' . $poly . ')', $molecule);
+					}
+					
+					$spot = strcspn($poly, '123456789');
+					if(is_numeric($spot)){
+						$sub = $poly{$spot};
+						$changed = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $poly);
+						$molecule = str_replace($poly, $changed, $molecule);
+					}
+					
+				}else{
+					$spot = strcspn($poly, '123456789');
+					if(is_numeric($spot)){
+						$sub = $poly{$spot};
+						$changed = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $poly);
+						$molecule = str_replace($poly, $changed, $molecule);
+					}
+				}
+			}
+		}
+		
+		//Fix regulars subscripts
+		$spot = strcspn($molecule, '123456789');
+		if(is_numeric($spot)){
+			if(isset($molecule{$spot})){
+				$sub = $molecule{$spot};
+				if(!($molecule{($spot - 1)} == '>')){
+					$string = '<sub class = "small">' . $sub . '</sub>';
+					$molecule = substr_replace($molecule, $string, $spot, 1);
+				}
+			}
+		}
+	
+		$formatted .= $ante . $molecule . ' + ';
+		
+		
+	}
+	
+	return trim(substr($formatted, 0, -2));
 }
 
 //Function that returns the greatest common factor of two values

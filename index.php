@@ -52,44 +52,27 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	}
 	
 	//Remove any reaction arrows from equation and run it through the check precipitation function
-	$result = testPrecipitation(returnReactants($_POST['equation']));
+	$result = getPrecipitation(returnReactants($_POST['equation']));
 	
-	echo $result;
-	/*
-	if($result[0] != -1){
-		$safety = 0;
-		while( (!is_numeric(strpos($result[0], '<img src="reaction_arrow.png"/>'))) && ($safety < 25)){
-			$safety++;
-			$result = checkPrecip($e, $result[0], $result[1]);
-		}
-		if($safety >= 24){
-			$errors[] = 'The equation you have entered is impossible to balance. Please review for errors.';
-		}
-	}		
-	
-		
-	
-	if(!empty($errors)){ //If there are items in the errors array
+	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
 		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';
-		foreach($errors as $error){
+		foreach($_SESSION['errors'] as $error){
 			echo '<li>' . $error . '</li>';
 		}
 		echo '</ul><p>Please fix and re-submit.</p>
 		</div>';
 		//exit;
 	}else{ //No Errors	
-		echo "<div id = 'results'><b>$result[0]</b>";
-		if(count($result[1]) > 0){
-			$result[1] = array_unique($result[1]);
-			$result[1] = array_filter($result[1]);
+		echo "<div id = 'results'><b>$result</b>";
+		if(count($_SESSION['work']) > 0){
+			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
 			echo '</br><div id = "work_wrap"><h2 class = "header">Explanation</h2><ul class = "work">';
-			foreach($result[1] as $step){
+			foreach($_SESSION['work'] as $step){
 				echo '<li>' . $step . '</li>';
 			}
 		}
 		echo "</ul></div></div>";
 	}
-	*/
 	
 }
 
