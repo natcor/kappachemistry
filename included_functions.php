@@ -387,7 +387,7 @@ function balanceEquation($reactants, $products){
 
 //Returns formatted equation
 function formatEquation($equation){
-	$polyatomics = array('OH', 'NO3', 'CO3', 'PO4', 'NH4', 'SO4');
+	$polyatomics = array_keys(getTable(null, null, 'polyatomics'));
 	$formatted = '';
 	$molecules = explode('+', $equation);
 	foreach($molecules as $molecule){
@@ -413,7 +413,6 @@ function formatEquation($equation){
 					}else{
 						$molecule = str_replace(' ', '', $molecule); 
 						$molecule = substr_replace($molecule, '<sub class = "small">' . $num . '</sub>', -1);
-						$molecule = str_replace($poly, '(' . $poly . ')', $molecule);
 					}
 					
 					$spot = strcspn($poly, '123456789');
@@ -447,8 +446,6 @@ function formatEquation($equation){
 		}
 	
 		$formatted .= $ante . $molecule . ' + ';
-		
-		
 	}
 	
 	return trim(substr($formatted, 0, -2));
