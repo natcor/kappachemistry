@@ -23,9 +23,13 @@ function returnReactants($input){
 //Checks if the input is in a valid format with correct charges and ratios
 function isValid($input){
 	
+	if(strlen($input) < 2){
+		$_SESSION['errors'][] = 'Enter valid reactants, silly.';
+		return false;
+	}
+	
 	//Split the input into molecules without coefficients and remove duplictes so only distinct molecules are left
 	$molecules = array_filter(array_unique(splitEquation($input, 2)));
-	
 	
 	//Loop through and split each molecule into it's atoms
 	foreach($molecules as $molecule){
@@ -39,14 +43,19 @@ function isValid($input){
 		//Value to hold metals found in the molecule that can take multiple charges (i.e. Cu)
 		$multipleCharges = '';
 		
+		//Value to hold number of metal that can take multiple charges
+		$multipleCount = 0;
+		
 		//Loop through each atom and add its charge to $netCharge. If entered correctly, charge should be zero for ionics.
 		foreach($atoms as $atom){
 			
 			//If the atom can take more than one charge, store it to be looped through later
 			if(gettype(getTable($atom, 'charge')) != 'integer'){
 				$multipleCharges = $atom;
+				$multipleCount++;
 				
 			}else{ //Atom has only one possible charge. Add charge to $netCharge.
+				
 				$netCharge += getTable($atom, 'charge');
 			}
 		}
@@ -56,8 +65,8 @@ function isValid($input){
 			foreach(getTable($multipleCharges, 'charge') as $charge){
 				
 				//If the charge balances the molecule
-				if($netCharge + $charge == 0){
-					$netCharge += $charge;
+				if($netCharge + $multipleCount * $charge == 0){
+					$netCharge += $multipleCount * $charge;
 					
 					//Add the atom and charge to be used later
 					$_SESSION['transitions'][$multipleCharges] = $charge;
@@ -67,7 +76,7 @@ function isValid($input){
 		}
 		//If the charge is not zero, set an error message and return false
 		if($netCharge !== 0){
-			$_SESSION['errors'] = 'There seems to be something fishy with the equation you entered. Perhaps you never passed basic addition in middle school. That might be it. Check your goddam charges.';
+			$_SESSION['errors'][] = 'There seems to be something fishy with the equation you entered. Perhaps you never passed basic addition in middle school. That might be it. Check your goddam charges.';
 			return false;
 		}
 	}
@@ -139,81 +148,83 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 	
 	//Split molecules into individual atoms based on location of next capital letter
 	foreach($adjustedMolecules as $molecule){
+			
+		//Variable that holds value to be pushed into array later
+		$toPush = '';
 		
-	
-		//Check if the molecule will break apart in water (if $accountSolublity set to true)
-		if( ($ignoreSolublity) || (isSoluble($molecule)) ){
+		//Push the individual atoms to the end of the array
+		foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
 			
-			//Variable that holds value to be pushed into array later
-			$toPush = '';
-			
-			//Push the individual atoms to the end of the array
-			foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
-			
-				//If no polyatomic ion is found in the molecule, check for one without parenthesis
-				if(strpos($molecule, $poly) === false){
+			//If no polyatomic ion is found in the molecule, check for one without parenthesis
+			if(strpos($molecule, $poly) === false){
 				
-					//If the molecule is equal to the polyatomic ion without the parenthesis, add parenthesis
-					$check = strtr($poly, array('(' => '', ')' => ''));
-					if(strpos($molecule, $check) !== false){
-						$molecule = str_replace($check, $poly, $molecule);
-					}
-				
+				//If the molecule is equal to the polyatomic ion without the parenthesis, add parenthesis
+				$check = strtr($poly, array('(' => '', ')' => ''));
+				if(strpos($molecule, $check) !== false){
+					$molecule = str_replace($check, $poly, $molecule);
 				}
 			
+			}
+		
+			//Create variable to hold position of polyatomic
+			$pos = strpos($molecule, $poly);
+		
+			//If there is a polyatomic ion in the molecule
+			if($pos !== false){
 			
-				//Create variable to hold position of polyatomic
-				$pos = strpos($molecule, $poly);
+				//Special case: if there is a polyatomic with subscript at the end, like Ba(NO3)2, or (NH4)2O
+				
+				//Create value to hold number (if existant). If the polyatomic ion is not at 0, take one of the total to avoid index out of bounds
+				if($pos == 0){
+					$num = (strlen($molecule) > $pos + strlen($poly) ? $molecule{$pos + strlen($poly)} : null);
+				}else{
+					$num = (strlen($molecule) > $pos + strlen($poly) ? $molecule{$pos + strlen($poly)} : null);
+				}
+				
 			
-				//If there is a polyatomic ion in the molecule
-				if($pos !== false){
-				
-					//Special case: if there is a polyatomic with subscript at the end, like Ba(NO3)2
-				
-					//Create value to hold number (if existant)
-					$num = substr($molecule, $pos + strlen($poly), $pos + strlen($poly) + 1);
-				
-					//If the character after the polytomic is a number, ensure to push the number with the molecule
-					if(is_numeric($num)){
-						
-						//If the polyatomic is not the first atom
-						if($pos > 0){
-							$toPush = substr($molecule, $pos, ($pos + strlen($poly) + 1));
-						}else{
-							$rawAtoms[] = substr($molecule, $pos, ($pos + strlen($poly) + 1));
-						}
-						
+				//If the character after the polytomic is a number, ensure to push the number with the molecule
+				if(is_numeric($num)){
+					
+					//If the polyatomic is not the first atom
+					if($pos > 0){
+						$toPush = substr($molecule, $pos, ($pos + strlen($poly) + 1));
 					}else{
-						$num = '';
-						if($pos > 0){
-							$toPush = substr($molecule, $pos, $pos + strlen($poly));
-						}else{
-							$rawAtoms[] = substr($molecule, $pos, $pos + strlen($poly));
-						}
-						
-						
+						$rawAtoms[] = substr($molecule, $pos, ($pos + strlen($poly) + 1));
 					}
-				
-					//Replace the entire molecule including trailing number (if existant) so that it will not be added again
-					$whole = $poly . $num;
-					$molecule = str_replace($whole, '', $molecule);
+					
+				}else{
+					$num = '';
+					if($pos > 0){
+						$toPush = substr($molecule, $pos, $pos + strlen($poly));
+					}else{
+						$rawAtoms[] = substr($molecule, $pos, $pos + strlen($poly));
+					}
+					
+					
 				}
-			}
 			
-			//Substrings past the first character, then searches for the next upercase letter to find the next atom.
-			array_push($rawAtoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOP') + 1));
-			
-			//Push the polyatomic afterward
-			if($toPush != ''){
-				$rawAtoms[] = $toPush;
+				//Replace the entire molecule including trailing number (if existant) so that it will not be added again
+				$whole = $poly . $num;
+				$molecule = str_replace($whole, '', $molecule);
 			}
-		
 		}
+		
+		//Substrings past the first character, then searches for the next upercase letter to find the next atom.
+		array_push($rawAtoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1));
+		
+		//Push the polyatomic afterward
+		if($toPush != ''){
+			$rawAtoms[] = $toPush;
+		}
+		
 	}
+	
+	//Filter the raw atoms
+	$rawAtoms = array_filter($rawAtoms);
 	
 	//If third level, return array of raw atoms 
 	if($level == 3){
-		return array_filter($rawAtoms);
+		return $rawAtoms;
 	}
 	
 	//Array to hold fully split atoms
@@ -273,7 +284,10 @@ function matchCharges($cation, $anion){
 function isSoluble($molecule){
 	
 	//Split molecule into individual atoms, but keep the trailing numbers
-	$atoms = splitEquation($molecule, 3);
+	$atoms = array_values(splitEquation($molecule, 3));
+	
+	//Combine atoms array back into molecule -- ensure polyatomics get parenthesis put around them
+	$molecule = implode(array_unique($atoms));
 	
 	//Solubility rules arrays
 	$halide_exceptions = array('Cu', 'Pb', 'Hg', 'Ag');
@@ -315,24 +329,33 @@ function isSoluble($molecule){
 					
 					//Check first if the exception has a static charge
 					if(is_int(getTable($exception, 'charge'))){
-						
+			
 						//If it has a static charge, check if the charge is soluble
 						if($halide_exceptions[$exception] != getTable($exception, 'charge')){
 							
 							//Add information to the work array and return true
 							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
 							return true;
+						}else{
+							//Add information to the work array and return true
+							$_SESSION['work'][] = $molecule .  " is insoluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							return false;
 						}
 					}else{
 						
 						//Check the charge of the exception vs. the charge of the element found by accession the session variable
 						if($halide_exceptions[$exception] != $_SESSION['transitions'][$exception]){
-						
+							
 							//Add information to the work array and return true
 							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
 							return true;
 						}
 					}
+				}else{
+					//Add information to the work array and return true
+					$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+					return true;
+					
 				}
 			}
 		}
@@ -345,11 +368,26 @@ function isSoluble($molecule){
 //Takes input reactants and products, both strings. Outputs a complete string that is the balanced equation, using --> as a yields symbol
 function balanceEquation($reactants, $products){
 	
-	//Remove any coefficients and split to molecules
+	//Split to molecules and ensure that the it is the correct form AaBb CcDd --> AeDf + CgBh
+	$first = $reactants;
+	$second = $products;
+	
+	
+	$first = splitEquation($first, 2);
+	$second = splitEquation($second, 2); //This area is poorly written. If you see a more effective strategy feel free to implement it.
+	
+	if(splitEquation($first[0], 4)[0] !== splitEquation($second[0], 4)[0]){
+		$first = array_reverse($first);
+	}
+	
+	//Glue the pieces back together
+	$reactants = implode(' + ', $first);
+	
+	//Remove any coefficients and split to atoms
 	$reactants = array_values(array_unique(splitEquation($reactants, 3)));
 	$products = array_values(array_unique(splitEquation($products, 3)));
 	
-	//Assign values to trailing numbers uses ternary operator
+	//Assign values to trailing numbers using ternary operator
 	$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
 	$b = (is_numeric(substr(trim($reactants[1]), -1, 1)) ? $b = substr(trim($reactants[1]), -1, 1) : $b = 1);
 	$c = (is_numeric(substr(trim($reactants[2]), -1, 1)) ? $c = substr(trim($reactants[2]), -1, 1) : $c = 1);
@@ -364,8 +402,8 @@ function balanceEquation($reactants, $products){
 	$y = ($w * $a)/$e;
 	$z = ($w * $b)/$h;
 	$x = ($w * $a * $f)/($e * $d);
-	//$nums = array($w, $x, $y, $z);
-	echo $w . $y . $z . $x;
+	$nums = array($w, $x, $y, $z);
+	
 	//If possible find greatest common factor of the coefficients
 	$lcd = array_reduce(array($w, $x, $y, $z), 'gcf');
 	if(is_int($lcd)){
@@ -373,14 +411,20 @@ function balanceEquation($reactants, $products){
 		//Simplify coefficients
 		foreach($nums as &$num){
 			$num = $num/$lcd;
-			if($num == 1){
-				$num = '';
-			}
+		}
+	}
+	
+	$_SESSION['work'][] = "To balance the equation, requires a ratio of $nums[0] : $nums[1] --> $nums[2] : $nums[3] for the atoms.";
+	
+	//If coefficient is one, remove it
+	foreach($nums as &$num){
+		if($num == 1){
+			$num = '';
 		}
 	}
 	
 	//Return formatted equation with state symbols
-	return $nums[0] . formatEquation("$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . $nums[1] . formatEquation("$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . $nums[2] . formatEquation("$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . $nums[2] .  formatEquation("$products[2]$products[3]") . "<sub class = 'small'>(aq)</sub>";
+	return $nums[0] . ("$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . $nums[1] . ("$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . $nums[2] . ("$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . $nums[3]. ("$products[2]$products[3]<sub class = 'small'>(aq)</sub>");
 	
 }
 

@@ -4,8 +4,15 @@ function getPrecipitation($reactants){
 	
 	//Check if the reaction is valid for a precipitation (i.e. if the charges of the atoms match)
 	if(!isValid($reactants)){
-		echo 'Reaction not valid.';
-		return -1;
+		return false;
+	}
+	
+	foreach(splitEquation($reactants, 2) as $molecule){
+		
+		if(!isSoluble($molecule)){
+			$_SESSION['work'][] = "The reactant $molecule is not soluble, so no reaction will take place.";
+			return "$reactants --> No Precipitation Reaction";
+		}
 	}
 	
 	//Split reactants into individual atoms
@@ -42,18 +49,20 @@ function getPrecipitation($reactants){
 		}
 	}
 	
-	//BaCl2 + K2SO4 doesn't work
-	
 	//If only one possible precipitate formed
-	if(count($precipitates == 1)){
+	if(count($precipitates) === 1){
 		
 		//Balance the reaction
 		$balancedEquation = balanceEquation($reactants, $precipitates[0] . ' + ' . matchCharges(array_shift($cations), array_shift($anions)) );
 		return $balancedEquation;
 	}else{
-		echo 'Two precipitates could form! Or you put in something solid in the reactants.';
+		if(count($precipitates) == 0){
+			return "$reactants --> No Precipitation Reaction";
+		}
+		if(count($precipitates) > 1){
+			return "Multiple Precipitation Reactions Possible.";
+		}
 	}
-	
 }
 
 ?>

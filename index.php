@@ -48,12 +48,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	
 	//Ensure that the user entered something
 	if(empty($_POST['equation'])){
-		$_SESSION['errors'] = 'Please enter an equation. When you don\'t enter and equation, somewhere in Africa someone contracts ebola.';
+		$_SESSION['errors'][] = 'Please enter an equation. When you don\'t enter and equation, somewhere in Africa someone contracts ebola.';
 	}
-	
+
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	$result = getPrecipitation(returnReactants($_POST['equation']));
-	echo $result;
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
 		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';
@@ -74,7 +73,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		}
 		echo "</ul></div></div>";
 	}
-	
 }
 
 //Unset all the session variables
