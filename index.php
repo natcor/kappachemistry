@@ -47,13 +47,15 @@ require('periodic_table.php');
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	
 	//Ensure that the user entered something
-	if(empty($_POST['equation'])){
+	if(strlen($_POST['equation']) < 2){
 		
-		$_SESSION['errors'][] = 'Please enter an equation. When you don\'t enter an equation, somewhere in Africa someone contracts Ebola.'; 
+		$_SESSION['errors'][] = 'Enter valid reactants, silly.'; 
 	}
 
 	//Remove any reaction arrows from equation and run it through the check precipitation function
-	$result = getPrecipitation(returnReactants($_POST['equation']));
+	if(empty($_SESSION['errors'])){
+		$result = getPrecipitation(returnReactants($_POST['equation']));
+	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
 		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';

@@ -8,18 +8,10 @@ function getPrecipitation($reactants){
 	}
 	
 	foreach(splitEquation($reactants, 2) as $molecule){
-		
 		if(!isSoluble($molecule)){
-			$_SESSION['work'][] = "The reactant $molecule is not soluble, so no reaction will take place.";
+			$_SESSION['work'][] = "$molecule is already a solid, silly.  Good luck trying to mix it.";
 			return "$reactants --> No Precipitation Reaction";
 		}
-	}
-	
-	//Check that neither of the reactants is insoluble
-	$compounds = splitEquation($reactants, 2);
-	if(!isSoluble($compounds[0]) || !isSoluble($compounds[1])){
-		echo 'One of these is already a solid, silly.  Good luck trying to mix it.';
-		return $reactants . " --> " . $reactants;
 	}
 	
 	//Split reactants into individual atoms
@@ -56,19 +48,23 @@ function getPrecipitation($reactants){
 		}
 	}
 	
+	print_r($precipitates);
+	if(count($precipitates) < 1){
+		return "$reactants --> No Precipitation Reaction";
+	}
+	
 	if(count($precipitates == 1)){
 		
 		//Balance the reaction
 		$balancedEquation = balanceEquation($reactants, $precipitates[0] . ' + ' . matchCharges(array_shift($cations), array_shift($anions)) );
 		return $balancedEquation;
 	}else{
-		if(count($precipitates) == 0){
-			return "$reactants --> No Precipitation Reaction";
-		}
+		
 		if(count($precipitates) > 1){
 			return "Multiple Precipitation Reactions Possible.";
 		}
 	}
+	
 }
 
 ?>

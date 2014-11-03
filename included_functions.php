@@ -23,11 +23,6 @@ function returnReactants($input){
 //Checks if the input is in a valid format with correct charges and ratios
 function isValid($input){
 	
-	if(strlen($input) < 2){
-		$_SESSION['errors'][] = 'Enter valid reactants, silly.';
-		return false;
-	}
-	
 	//Split the input into molecules without coefficients and remove duplictes so only distinct molecules are left
 	$molecules = array_filter(array_unique(splitEquation($input, 2)));
 	
@@ -51,6 +46,7 @@ function isValid($input){
 			
 			//If the atom can take more than one charge, store it to be looped through later
 			if(gettype(getTable($atom, 'charge')) != 'integer'){
+			
 				$multipleCharges = $atom;
 				$multipleCount++;
 				
@@ -298,7 +294,7 @@ function isSoluble($molecule){
 	$halide_exceptions = array('Cu', 'Pb', 'Hg', 'Ag');
 	$soluble = array('(NH4)', '(NO3)', '(ClO3)', '(ClO4)', '(C2H3O2)', '(CH3COO)');
 	$halide_exceptions = array('Ag' => 1, 'Pb' => 2, 'Hg2' => 2, 'Cu' => 1); //Format is atom => charge
-	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2'); //Ba is 2+, Sr <-- lololol nate comes through in the clutch w/ another brilliant comment.  Ba is always 2+
+	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2'); 
 	$hydroxide_exceptions = array('Ba', 'Ca', 'Sr');
 	
 	//Add all alkali metals to the $soluble array
@@ -336,33 +332,50 @@ function isSoluble($molecule){
 			
 						//If it has a static charge, check if the charge is soluble
 						if($halide_exceptions[$exception] != getTable($exception, 'charge')){
-							
+
 							//Add information to the work array and return true
 							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
 							return true;
 						}else{
-							//Add information to the work array and return true
+							//Add information to the work array and return false
 							$_SESSION['work'][] = $molecule .  " is insoluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
 							return false;
 						}
 					}else{
-						
+		
 						//Check the charge of the exception vs. the charge of the element found by accession the session variable
 						if($halide_exceptions[$exception] != $_SESSION['transitions'][$exception]){
-							
 							//Add information to the work array and return true
 							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
 							return true;
+						}else{
+							//Add information to the work array and return false
+							$_SESSION['work'][] = $molecule .  " is insoluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							return false;
 						}
 					}
-				}else{
-					//Add information to the work array and return true
-					$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
-					return true;
-					
 				}
 			}
+		//Add information to the work array and return true
+		$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+		return true;	
 		}
+	}
+	
+	//Check for hydroxides
+	if(strpos($molecule, 'OH') !== false){
+		
+		//If there is a hydroxide insoluble exception, return true
+		foreach($hydroxide_exceptions as $exception){
+			if(strpos($molecule, $exception) !== false){
+				
+				//Add information to the work array and return true
+				$_SESSION['work'][] = $molecule .  " is soluble: hydroxide salts are soluble with the exception of Ba<sup>2+</sup>, Ca<sup>2+</sup>, Sr<sub>2+";
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	//If nothing proved it soluble, assume it is insoluble.
@@ -418,7 +431,7 @@ function balanceEquation($reactants, $products){
 		}
 	}
 	
-	$_SESSION['work'][] = "To balance the equation, requires a ratio of $nums[0] : $nums[1] --> $nums[2] : $nums[3] for the atoms.";
+	$_SESSION['work'][] = "To balance the equation, requires a ratio of $nums[0]:$nums[1] --> $nums[2]:$nums[3] for the atoms.";
 	
 	//If coefficient is one, remove it
 	foreach($nums as &$num){

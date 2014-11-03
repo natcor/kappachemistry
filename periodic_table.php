@@ -179,6 +179,7 @@ function getTable($element, $property, $array = null){
 			
 			//Ones that can only take one charge
 			"Zn" => array(
+				"name" => 'zinc',
 				"atomic_number" => 30,
 				"molar_mass" => 65.38, 
 				"electronegativity" => 1.6,
@@ -186,6 +187,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 9
 			),
 			"Hg" => array(
+				"name" => 'mercury',
 				"atomic_number" => 80,
 				"molar_mass" => 200.59, 
 				"electronegativity" => 1.9,
@@ -193,6 +195,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 19
 			),
 			"Ag" => array(
+				"name" => 'silver',
 				"atomic_number" => 47,
 				"molar_mass" => 107.8682, 
 				"electronegativity" => 1.9,
@@ -200,6 +203,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 18
 			),
 			"Al" => array(
+				"name" => 'aluminum',
 				"atomic_number" => 13,
 				"molar_mass" => 26.981, 
 				"electronegativity" => 1.5,
@@ -209,6 +213,7 @@ function getTable($element, $property, $array = null){
 			
 			//Ones that can take multiple charges have arrays for their ion form
 			"Fe" => array(
+				"name" => 'iron',
 				"atomic_number" => 26,
 				"molar_mass" => 55.845,
 				"electronegativity" => 1.8,
@@ -217,6 +222,7 @@ function getTable($element, $property, $array = null){
 					
 			),
 			"Pt" => array(
+				"name" => 'platinum',
 				"atomic_number" => 78,
 				"molar_mass" => 195.084,
 				"electronegativity" => 1.9, //Actual 2.2 but don't want to say that because throws off values
@@ -225,6 +231,7 @@ function getTable($element, $property, $array = null){
 					
 			),
 			"Au" => array(
+				"name" => 'gold',
 				"atomic_number" => 79,
 				"molar_mass" => 196.96,
 				"electronegativity" => 1.9, //Actual 2.4 but don't want to say that because throws off values
@@ -233,6 +240,7 @@ function getTable($element, $property, $array = null){
 					
 			),
 			"Cu" => array(
+				"name" => 'copper',
 				"atomic_number" => 29,
 				"molar_mass" => 63.546,
 				"electronegativity" => 1.9,
@@ -240,6 +248,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 17
 			),
 			"Co" => array(
+				"name" => 'cobalt',
 				"atomic_number" => 27,
 				"molar_mass" => 58.933,
 				"electronegativity" => 1.8,
@@ -247,6 +256,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 12
 			),
 			"Sn" => array(
+				"name" => 'tin',
 				"atomic_number" => 50,
 				"molar_mass" => 118.710,
 				"electronegativity" => 1.8,
@@ -254,6 +264,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 14
 			),
 			"Pb" => array(
+				"name" => 'lead',
 				"atomic_number" => 82,
 				"molar_mass" => 207.2	,
 				"electronegativity" => 1.9,
@@ -261,6 +272,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 15
 			),
 			"Ni" => array(
+				"name" => 'nickel',
 				"atomic_number" => 28,
 				"molar_mass" => 58.6934	,
 				"electronegativity" => 1.9,
@@ -268,6 +280,7 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 13
 			),
 			"Mn" => array(
+				"name" => 'manganese',
 				"atomic_number" => 25,
 				"molar_mass" => 54.938	,
 				"electronegativity" => 1.5,
@@ -275,10 +288,19 @@ function getTable($element, $property, $array = null){
 				"reactivity" => 8
 			),
 			"Cr" => array(
+				"name" => 'chromium',
 				"atomic_number" => 24,
 				"molar_mass" => 51.9961	,
 				"electronegativity" => 1.6,
 				"charge" => array(2, 3),
+				"reactivity" => 10
+			),
+			"Ti" => array(
+				"name" => 'titanium',
+				"atomic_number" => 22,
+				"molar_mass" => 47.867	,
+				"electronegativity" => 1.5,
+				"charge" => array(2, 3, 4),
 				"reactivity" => 10
 			)
 			
@@ -289,34 +311,64 @@ function getTable($element, $property, $array = null){
 			//DISLCLAIMER: polyatomic ions do not have electronegativies since they are molecules. The electronegativly given is simply to determine whether the molecule is utilized generally as a cation or anion in ionic bonding.
 			
 			"(OH)" => array(
-				"atomic_number" => 9,
+				"name" => 'hydroxide',
 				"molar_mass" => 18.998, 
 				"electronegativity" => 3,
 				"charge" => -1
 			),
 			"(NO3)" => array(
-				"atomic_number" => 17,
+				"name" => 'nitrate',
 				"molar_mass" => 35.45, 
 				"electronegativity" => 3,
 				"charge" => -1
 			),
 			"(PO4)" => array(
-				"atomic_number" => 35,
-				"molar_mass" => 79.904, 
+				"name" => 'phosphate',
+				"molar_mass" => 94.97, 
 				"electronegativity" => 3,
 				"charge" => -3
 			),
 			"(NH4)" => array(
-				"atomic_number" => 35,
-				"molar_mass" => 79.904, 
+				"name" => 'ammonium',
+				"molar_mass" => 18.04, 
 				"electronegativity" => 1,
 				"charge" => 1
 			),
+			"(NH3)" => array(
+				"name" => 'ammonia',
+				"molar_mass" => 17.03, 
+				"electronegativity" => 1,
+				"charge" => 0
+			),
 			"(SO4)" => array(
-				"atomic_number" => 9,
-				"molar_mass" => 18.998, 
+				"name" => 'sulfate',
+				"molar_mass" => 96.06, 
 				"electronegativity" => 3,
 				"charge" => -2
+			),
+			"(CO3)" => array(
+				"name" => 'carbonate',
+				"molar_mass" => 60.01, 
+				"electronegativity" => 3,
+				"charge" => -2
+			),
+			"(CrO4)" => array(
+				"name" => 'chromate',
+				"molar_mass" => 115.99, 
+				"electronegativity" => 3,
+				"charge" => -2
+			),
+			"(C2H3O2)" => array(
+				"name" => 'acetate',
+				"molar_mass" => 59.04, 
+				"electronegativity" => 3,
+				"charge" => -1
+			),
+			"(CH3COO)" => array(
+				"name" => 'acetate',
+				"molar_mass" => 59.04, 
+				"electronegativity" => 3,
+				"charge" => -1
 			)
 		)
 	);
