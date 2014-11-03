@@ -37,8 +37,8 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
         <div class="cover-container">
 
           <div class="inner cover">
-            <h1 class="cover-heading">Kappa Chemistry</h1>
-	    <p class="lead">No longer a fractal of bad design</p>
+            <h1 class="cover-heading text-center">Kappa Chemistry</h1>
+	    <p class="lead text-center">No longer a fractal of bad design</p>
             <p class="lead">
 		<form action = 'index.php' method = 'post' autocomplete="off">
 		<div class="form-group col-md-10 col-md-offset-1">
@@ -48,10 +48,11 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 		//}?>" />
 		</div>
 		<div class="form-group">
-		<button type="submit" name="submit" class="btn btn-lg btn-default" value="Solve">Solve</button>
+		<button type="submit" name="submit" class="btn btn-lg btn-default center-block" value="Solve">Solve</button>
 		</div>
 		</form>
 	    </p>
+	    
 
 
     <!-- / taken from bs -->
@@ -80,7 +81,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
-		echo '<div class = "lead" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
+		echo '<div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
 		foreach($_SESSION['errors'] as $error){
 			echo '' . $error . '<br />'; // UM SO I COULDNT GET LIST ELEMENTS TO NOT APPEAR ATROCIOUS SO THEYRE GONE
 		}
@@ -88,15 +89,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		</div>';
 	
 	}else{ //No Errors	
-		echo "<div id = 'results'><b>$precipResult</b></br></br><b>$acidResult</b>";
+		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$precipResult<br />$acidResult</p>";
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
-			echo '</br><div id = "work_wrap"><h2 class = "header">Explanation</h2><ul class = "work">';
+			echo '<p class = "lead text-center" style="margin: 0">Explanation</p><ul class = "work" style = "display: table; margin: 0 auto;">';
 			foreach($_SESSION['work'] as $step){
 				echo '<li>' . $step . '</li>';
 			}
 		}
-		echo "</ul></div></div>";
+		echo "</ul></div>";
 	}
 }
 

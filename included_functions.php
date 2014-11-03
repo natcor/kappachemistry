@@ -583,7 +583,7 @@ function balanceEquation($reactants, $products){
 	}
 	
 	//Return formatted equation with state symbols
-	return formatEquation("$nums[0]$reactants[0]$reactants[1] + $nums[1]$reactants[2]$reactants[3]") .  "-->" . formatEquation("$nums[2]$products[0]$products[1] + $nums[3]$products[2]$products[3]");
+	return formatEquation("$nums[0]$reactants[0]$reactants[1] + $nums[1]$reactants[2]$reactants[3]") .  " --> " . formatEquation("$nums[2]$products[0]$products[1] + $nums[3]$products[2]$products[3]");
 	
 }
 
