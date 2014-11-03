@@ -54,7 +54,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	if(empty($_SESSION['errors'])){
-		$result = getPrecipitation(returnReactants($_POST['equation']));
+		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
+		$acidResult = getAcidBase(returnReactants($_POST['equation']));
 	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
@@ -66,7 +67,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		</div>';
 	
 	}else{ //No Errors	
-		echo "<div id = 'results'><b>$result</b>";
+		echo "<div id = 'results'><b>$precipResult</b></br></br><b>$acidResult</b>";
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
 			echo '</br><div id = "work_wrap"><h2 class = "header">Explanation</h2><ul class = "work">';

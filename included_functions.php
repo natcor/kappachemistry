@@ -502,6 +502,24 @@ function isSoluble($molecule, $showWork = false){
 		return false;
 	}
 	
+	
+	//Check for sulfates
+	if(strpos($molecule, 'SO4') !== false){
+		
+		//If there is a hydroxide insoluble exception, return true
+		foreach($sulfate_exceptions as $exception){
+			if(strpos($molecule, $exception) !== false){
+				
+				//Add information to the work array and return true
+				if($showWork){
+				$_SESSION['work'][] = $molecule .  " is insoluble: sulfate salts are soluble with the exception of Ba<sup>2+</sup>, Ca<sup>2+</sup>, Sr<sub>2+";
+				}
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	//If nothing proved it soluble, assume it is insoluble.
 	return false;
 }

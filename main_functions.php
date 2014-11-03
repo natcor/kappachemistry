@@ -70,4 +70,51 @@ function getPrecipitation($reactants){
 	
 }
 
+//Checks where an acid base reaction is possible
+function getAcidBase($equation){
+	
+	//Split equation into molecules
+	$molecules = splitEquation($equation, 2);
+	
+	//Create array to hold soluble atoms
+	$ions = array();
+	
+	//Add all soluble atoms into the ions array, and remove parenthesis around polyatomics to make things like OH more accessible
+	foreach($molecules as $molecule){
+		if(isSoluble($molecule)){
+			$atoms = splitEquation($molecule);
+			foreach($atoms as $atom){
+				$ions[] = strtr($atom, array('(OH)' => 'OH'));
+			}
+		}
+	}
+	
+	//Create array to hold the products
+	$products = '';
+	
+	if( (in_array('H', $ions)) && (in_array('OH', $ions)) ){
+		$products .= 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub> + ';
+		foreach($ions as &$ion){
+			if( ($ion == 'H') || ($ion == 'OH') ){
+				$ion = '';
+			}
+		}
+	}
+	
+	//Filter ions array
+	$ions = array_values(array_filter($ions));
+	
+	echo count($ions);
+	print_r($ions);
+	//Add other molecule
+	if(count($ions) == 2){
+		$products .= formatEquation(matchCharges($ions[0], $ions[1]));
+		
+	}else{
+		return "$equation --> No Acid-Base Reaction";
+	}
+	
+	return formatEquation($equation) . ' --> ' . $products;
+}
+
 ?>
