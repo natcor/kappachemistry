@@ -12,28 +12,49 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 
 ?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<title>Kappa Chemical</title>	
+	<title>Kappa Chemical</title>
+	<!--BS CDN--->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" />
+	<!-- stuff in main.css will override the default bs stylesheet -->
 	<link rel="stylesheet" href="main.css" type="text/css" media="screen" />
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
 </head>
 <body>
-<div class="outer">
-<div class="middle">
-<div class="inner">
+	<!-- taken from bs -->
+    <div class="site-wrapper">
 
-<div class = "bubble">
-<form action = 'index.php' method = 'post' autocomplete="off">
-	<input type = "text" name = "equation" id = "equation" placeholder = "<?php echo $options[$num] ?>" value = "<?php
-	if(isset($_POST['equation'])){
-	echo $_POST['equation'];
-	}?>"/>
-	<input type = 'submit' name = 'submit' class = "myButton" value = "Solve" />
-</form>
-</div>
+      <div class="site-wrapper-inner">
 
+        <div class="cover-container">
+
+          <div class="inner cover">
+            <h1 class="cover-heading">Kappa Chemistry</h1>
+	    <p class="lead">No longer a fractal of bad design</p>
+            <p class="lead">
+		<form action = 'index.php' method = 'post' autocomplete="off">
+		<div class="form-group col-md-10 col-md-offset-1">
+		<input type = "text" class = "form-control" name = "equation" id = "equation" placeholder = "<?php echo $options[$num] ?>" value = "<?php
+		//don't think u need this: if(isset($_POST['equation'])){
+		echo $_POST['equation'];
+		//}?>" />
+		</div>
+		<div class="form-group">
+		<button type="submit" name="submit" class="btn btn-lg btn-default" value="Solve">Solve</button>
+		</div>
+		</form>
+	    </p>
+
+
+    <!-- / taken from bs -->
 
 <?php
 $pageTitle = 'Home';
@@ -59,11 +80,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
-		echo '<div class = "error"><p>The following error(s) occured: </p><ul>';
+		echo '<div class = "lead" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
 		foreach($_SESSION['errors'] as $error){
-			echo '<li>' . $error . '</li>';
+			echo '' . $error . '<br />'; // UM SO I COULDNT GET LIST ELEMENTS TO NOT APPEAR ATROCIOUS SO THEYRE GONE
 		}
-		echo '</ul><p>Please fix and re-submit.</p>
+		echo '</p>Please fix and re-submit.
 		</div>';
 	
 	}else{ //No Errors	
@@ -84,8 +105,26 @@ session_unset();
 
 ?>
 
-</div>
-</div>
-</div>
+
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>Whatever you want to go here</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<!--IE10 viewport workaround (probz gonna want 2 have this file locally)-->
+<script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+
 </body>
 </html>
