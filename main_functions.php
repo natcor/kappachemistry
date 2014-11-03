@@ -2,6 +2,9 @@
 
 function getPrecipitation($reactants){
 	
+	//Convert words
+	$reactants = convertWords($reactants);
+	
 	//Check if the reaction is valid for a precipitation (i.e. if the charges of the atoms match)
 	if(!isValid($reactants)){
 		return false;
@@ -9,6 +12,7 @@ function getPrecipitation($reactants){
 	
 	foreach(splitEquation($reactants, 2) as $molecule){
 		if(!isSoluble($molecule)){
+			isSoluble($molecule, true);
 			$_SESSION['work'][] = "$molecule is already a solid, silly.  Good luck trying to mix it.";
 			return "$reactants --> No Precipitation Reaction";
 		}
@@ -36,7 +40,7 @@ function getPrecipitation($reactants){
 	//Check every possible anion/cation possiblility for solubility
 	foreach($cations as $cation){
 		foreach($anions as $anion){
-			if(!isSoluble(matchCharges($cation, $anion)) ){ //If the combination is soluble
+			if(!isSoluble(matchCharges($cation, $anion), true) ){ //If the combination is soluble
 				
 				//Remove the precipitate ions from the reactants array
 				unset($cations[array_search($cation, $cations)]);
@@ -48,7 +52,6 @@ function getPrecipitation($reactants){
 		}
 	}
 	
-	print_r($precipitates);
 	if(count($precipitates) < 1){
 		return "$reactants --> No Precipitation Reaction";
 	}

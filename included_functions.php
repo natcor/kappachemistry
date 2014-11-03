@@ -20,6 +20,116 @@ function returnReactants($input){
 	return $input;
 }
 
+//Converts and words to their corresponding atoms
+function convertWords($equation){
+	
+	$conversions = array(
+		'nitrate' => '(NO3)',
+		'sulfate' => '(SO4)',
+		'chromate' => '(CrO4)',
+		'ammonium' => '(NH4)',
+		'ammonia' => '(NH3)',
+		'phosphate' => '(PO4)',
+		'hydroxide' => '(OH)',
+		'acetate' => '(C2H3O2)',
+		'hydrogen' => 'H',
+		'lithium' => 'Li',
+		'sodium' => 'Na',
+		'potassium' => 'K',
+		'rubidium' => 'Rb',
+		'caesium' => 'Cs',
+		'cesium' => 'Cs',
+		'francium' => 'Fr',
+		'berylium' => 'Be',
+		'magnesium' => 'Mg',
+		'calcium' => 'Ca',
+		'strontium' => 'Sr',
+		'barium' => 'Ba',
+		'radium' => 'Ra',
+		'chloride' => 'Cl',
+		'titanium' => 'Ti',
+		'tungsten' => 'W',
+		'manganese' => 'Mn',
+		'iron' => 'Fe',
+		'cobalt' => 'Co',
+		'nickel' => 'Ni',
+		'palladium' => 'Pd',
+		'platinum' => 'Pt',
+		'copper' => 'Cu',
+		'silver' => 'Ag',
+		'gold' => 'Au',
+		'zinc' => 'Zn',
+		'cadmium' => 'Cd',
+		'mercury' => 'Hg',
+		'aluminum' => 'Al',
+		'boron' => 'B',
+		'carbon' => 'C',
+		'silicon' => 'Si',
+		'tin' => 'Sn',
+		'lead' => 'Pb',
+		'bismuth' => 'Bi',
+		'nitride' => 'N',
+		'phosphide' => 'P',
+		'oxide' => 'O',
+		'sulfide' => 'S',
+		'selenide' => 'Se',
+		'flouride' => 'F',
+		'chloride' => 'Cl',
+		'bromide' => 'Br',
+		'iodide' => 'I',
+	);
+	
+	$changed = array();
+	
+	//Split reactants into molecules
+	$molecules = explode('+', $equation);
+	foreach($molecules as $molecule){
+		$atoms = explode(' ', $molecule);
+		foreach($atoms as &$atom){
+			
+			//Match anything between parenthesis (namely charges) and store the charge in $atom
+			preg_match('/\((.*?)\)/', $atom, $matches);
+			if(count($matches) > 1){
+				if(is_numeric($matches[1])){
+					$charge = $matches[1];
+				}else{
+					$charge = toArabic($matches[1]);
+				}
+					
+				$atom = str_replace($matches[0], '', $atom);
+			}else{
+				$charge = null;
+			}
+			
+			foreach($conversions as $conversion => $value){
+				
+				if(strpos($atom, $conversion) !== false){
+					
+					//Replace the text with the correct words
+					$atom = str_replace($conversion, $value, $atom);
+					
+					//If a charge was given, put it into the session variable
+					if($charge > 0){
+						$_SESSION['transitions'][$atom] = $charge;
+					}
+				}
+		
+			}
+		}
+		
+		$atoms = array_values(array_filter($atoms));
+		
+		if(isset($atoms[1])){
+			$changed[] = matchCharges($atoms[0], $atoms[1]);
+		}else{
+			$changed[] = $atoms[0];
+		}
+		
+	}
+	
+	return implode(' + ', $changed);
+}
+
 //Checks if the input is in a valid format with correct charges and ratios
 function isValid($input){
 	
@@ -282,7 +392,7 @@ function matchCharges($cation, $anion, $usePetersBetterVersion = false){
 	- Function takes a string as input (must have matchCharges peformed on it)
 	- Returns boolean true/false
 */
-function isSoluble($molecule){
+function isSoluble($molecule, $showWork = false){
 	
 	//Split molecule into individual atoms, but keep the trailing numbers
 	$atoms = array_values(splitEquation($molecule, 3));
@@ -310,7 +420,9 @@ function isSoluble($molecule){
 		if(strpos($molecule, $atom) !== false){
 			
 			//Add information to the work array and return true
-			$_SESSION['work'][] = $molecule .  " is soluble: ammonium, nitrate, chlorate, perchlorate, and acetate salts are always soluble.";
+			if($showWork){
+				$_SESSION['work'][] = $molecule .  " is soluble: ammonium, nitrate, chlorate, perchlorate, and acetate salts are always soluble.";
+			}
 			return true;
 		}
 	}
@@ -334,11 +446,15 @@ function isSoluble($molecule){
 						if($halide_exceptions[$exception] != getTable($exception, 'charge')){
 
 							//Add information to the work array and return true
-							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							if($showWork){
+								$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							}
 							return true;
 						}else{
 							//Add information to the work array and return false
+							if($showWork){
 							$_SESSION['work'][] = $molecule .  " is insoluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							}
 							return false;
 						}
 					}else{
@@ -346,18 +462,24 @@ function isSoluble($molecule){
 						//Check the charge of the exception vs. the charge of the element found by accession the session variable
 						if($halide_exceptions[$exception] != $_SESSION['transitions'][$exception]){
 							//Add information to the work array and return true
+							if($showWork){
 							$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							}
 							return true;
 						}else{
 							//Add information to the work array and return false
+							if($showWork){
 							$_SESSION['work'][] = $molecule .  " is insoluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+							}
 							return false;
 						}
 					}
 				}
 			}
 		//Add information to the work array and return true
+		if($showWork){
 		$_SESSION['work'][] = $molecule .  " is soluble: halide salts are soluble with the exception of Ag<sup>+</sup>, Pb<sup>2+</sup>, Hg<sub>2</sub><sup>2+</sup>";
+		}
 		return true;	
 		}
 	}
@@ -370,7 +492,9 @@ function isSoluble($molecule){
 			if(strpos($molecule, $exception) !== false){
 				
 				//Add information to the work array and return true
+				if($showWork){
 				$_SESSION['work'][] = $molecule .  " is soluble: hydroxide salts are soluble with the exception of Ba<sup>2+</sup>, Ca<sup>2+</sup>, Sr<sub>2+";
+				}
 				return true;
 			}
 		}
@@ -441,78 +565,71 @@ function balanceEquation($reactants, $products){
 	}
 	
 	//Return formatted equation with state symbols
-	return $nums[0] . ("$reactants[0]$reactants[1]") . "<sub class = 'small'>(aq)</sub> + " . $nums[1] . ("$reactants[2]$reactants[3]") . "<sub class = 'small'>(aq)</sub> --> " . $nums[2] . ("$products[0]$products[1]") . "<sub class = 'small'>(s)</sub> + " . $nums[3]. ("$products[2]$products[3]<sub class = 'small'>(aq)</sub>");
+	return formatEquation("$nums[0]$reactants[0]$reactants[1] + $nums[1]$reactants[2]$reactants[3]") .  "-->" . formatEquation("$nums[2]$products[0]$products[1] + $nums[3]$products[2]$products[3]");
 	
 }
 
 //Returns formatted equation
 function formatEquation($equation){
-	$polyatomics = array_keys(getTable(null, null, 'polyatomics'));
-	$formatted = '';
-	$molecules = explode('+', $equation);
-	foreach($molecules as $molecule){
-		$molecule = str_replace(' ', '', $molecule); 
-		$ante = '';
-		if(is_numeric(substr($molecule, 0, 1))){
-			$ante = substr($molecule, 0, 1);
-			$molecule = substr($molecule, 1);
-		}
-		
-		//For polyatomics, fix both i.e. (NO3)3 subscripts both 3's
-		foreach($polyatomics as $poly){
-			$pos = strpos($molecule, $poly);
-			if(is_numeric($pos)){
 	
-				$molecule .= ' ';
-				if(is_numeric($molecule{$pos + strlen($poly)}) ){
-					
-					$num = $molecule{($pos + strlen($poly))};
-					
-					if($num <= 1){
-						$num = '';
-					}else{
-						$molecule = str_replace(' ', '', $molecule); 
-						$molecule = substr_replace($molecule, '<sub class = "small">' . $num . '</sub>', -1);
-					}
-					
-					$spot = strcspn($poly, '123456789');
-					if(is_numeric($spot)){
-						$sub = $poly{$spot};
-						$changed = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $poly);
-						$molecule = str_replace($poly, $changed, $molecule);
-					}
-					
-				}else{
-					$spot = strcspn($poly, '123456789');
-					if(is_numeric($spot)){
-						$sub = $poly{$spot};
-						$changed = str_replace($sub, '<sub class = "small">' . $sub . '</sub>', $poly);
-						$molecule = str_replace($poly, $changed, $molecule);
-					}
+	//Value for formatted equation
+	$formatted = $equation;
+	
+	//Explode equation into individual molecules
+	$molecules = array_unique(splitEquation($equation, 2));
+	
+	//Replace all numbers as subscripts
+	$numbers = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
+	foreach($numbers as $number){
+		
+		foreach($molecules as &$molecule){
+			
+			//Replace
+			$original = $molecule;
+			$molecule = str_replace($number, "<sub class = 'small'>$number</sub>", $molecule);
+			
+			//Add state symbols
+			if(isSoluble($molecule)){
+				if(strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false){
+					$molecule .= "<sub class = 'small'>(aq)</sub>";
+				}
+			}else{
+				if(strpos($molecule, "<sub class = 'small'>(s)</sub>") !== false){
+					$molecule .= "<sub class = 'small'>(s)</sub>";
 				}
 			}
+			
+			$formatted = str_replace($original, $molecule, $formatted);
 		}
-		
-		//Fix regulars subscripts
-		$spot = strcspn($molecule, '123456789');
-		if(is_numeric($spot)){
-			if(isset($molecule{$spot})){
-				$sub = $molecule{$spot};
-				if(!($molecule{($spot - 1)} == '>')){
-					$string = '<sub class = "small">' . $sub . '</sub>';
-					$molecule = substr_replace($molecule, $string, $spot, 1);
-				}
-			}
-		}
-	
-		$formatted .= $ante . $molecule . ' + ';
 	}
 	
-	return trim(substr($formatted, 0, -2));
-	
-	
-	//Remove any coefficients
-	echo $reactants . ' --> ' . $products;
+	return $formatted;
+}
+
+//Converts from roman numerals to arabic numbering
+function toArabic($number){
+	switch($number){
+		
+		case 'I':	
+			return 1;
+			break;
+		case 'II':	
+			return 2;
+			break;
+		case 'III':	
+			return 3;
+			break;	
+		case 'IV':	
+			return 4;
+			break;	
+		case 'V':	
+			return 5;
+			break;
+		case 'VI':	
+			return 6;
+			break;		
+	}
+	return -1;
 }
 
 //Function that returns the greatest common factor of two values
