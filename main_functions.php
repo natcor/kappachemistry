@@ -104,8 +104,6 @@ function getAcidBase($equation){
 	//Filter ions array
 	$ions = array_values(array_filter($ions));
 	
-	echo count($ions);
-	print_r($ions);
 	//Add other molecule
 	if(count($ions) == 2){
 		$products .= formatEquation(matchCharges($ions[0], $ions[1]));
