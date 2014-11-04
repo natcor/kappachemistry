@@ -546,8 +546,19 @@ function balanceEquation($reactants, $products){
 	$reactants = array_values(array_unique(splitEquation($reactants, 3)));
 	$products = array_values(array_unique(splitEquation($products, 3)));
 	
-	//Assign values to trailing numbers using ternary operator
-	$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
+	//takes the coefficients from the match charges function to assign trailing values
+	$a = matchCharges($reactants[0], $reactants[1], true)['cation'];
+	$b = matchCharges($reactants[0], $reactants[1], true)['anion'];
+	$c = matchCharges($reactants[2], $reactants[3], true)['cation'];
+	$d = matchCharges($reactants[2], $reactants[3], true)['anion'];
+	
+	$e = matchCharges($products[0], $products[1], true)['cation'];
+	$f = matchCharges($products[0], $products[1], true)['anion'];
+	$g = matchCharges($products[2], $products[3], true)['cation'];
+	$h = matchCharges($products[2], $products[3], true)['anion'];
+	
+	//Assign values to trailing numbers using ternary operator -- DEPRECATED (such a cody and legit word)
+	/*$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
 	$b = (is_numeric(substr(trim($reactants[1]), -1, 1)) ? $b = substr(trim($reactants[1]), -1, 1) : $b = 1);
 	$c = (is_numeric(substr(trim($reactants[2]), -1, 1)) ? $c = substr(trim($reactants[2]), -1, 1) : $c = 1);
 	$d = (is_numeric(substr(trim($reactants[3]), -1, 1)) ? $d = substr(trim($reactants[3]), -1, 1) : $d = 1);
@@ -555,7 +566,7 @@ function balanceEquation($reactants, $products){
 	$e = (is_numeric(substr(trim($products[0]), -1, 1)) ? $e = substr(trim($products[0]), -1, 1) : $e = 1);
 	$f = (is_numeric(substr(trim($products[1]), -1, 1)) ? $f = substr(trim($products[1]), -1, 1) : $f = 1);
 	$g = (is_numeric(substr(trim($products[2]), -1, 1)) ? $g = substr(trim($products[2]), -1, 1) : $g = 1);
-	$h = (is_numeric(substr(trim($products[3]), -1, 1)) ? $h = substr(trim($products[3]), -1, 1) : $h = 1);
+	$h = (is_numeric(substr(trim($products[3]), -1, 1)) ? $h = substr(trim($products[3]), -1, 1) : $h = 1);*/
 	
 	$w = 12;
 	$y = ($w * $a)/$e;
