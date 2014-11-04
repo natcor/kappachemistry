@@ -77,6 +77,9 @@ function getAcidBase($equation){
 	//Split equation into molecules
 	$molecules = splitEquation($equation, 2);
 	
+	$ions = splitAcidBase($molecules);
+	//print_r($ions);
+
 	//Create array to hold soluble atoms
 	$ions = array();
 	
@@ -104,6 +107,11 @@ function getAcidBase($equation){
 	
 	//Filter ions array
 	$ions = array_values(array_filter($ions));
+	
+	//Ensure correct cation/anion order
+	if(getTable($ions[0], 'electronegativity') > getTable($ions[1], 'electronegativity')){
+		$ions = array_reverse($ions);
+	}
 	
 	//Add other molecule
 	if(count($ions) == 2){

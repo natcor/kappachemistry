@@ -561,8 +561,12 @@ function balanceEquation($reactants, $products){
 	$g = matchCharges($products[2], $products[3], true)['cation'];
 	$h = matchCharges($products[2], $products[3], true)['anion'];
 	
+<<<<<<< Updated upstream
 
 	
+=======
+	//echo "$a $b $c $d $e $f $g $h";
+>>>>>>> Stashed changes
 	
 	//Assign values to trailing numbers using ternary operator -- DEPRECATED (such a cody and legit word)
 	/*$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
@@ -608,7 +612,6 @@ function balanceEquation($reactants, $products){
 //Returns formatted equation
 function formatEquation($equation){
 	
-	
 	//Remove parenthesis if it has a single polyatomic
 	foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
 	
@@ -622,6 +625,11 @@ function formatEquation($equation){
 			
 		}
 	}	
+	
+	//Check for decomposition
+	/*if(strpos($equation, 'H2CO3') !== false){
+		$equation = str_replace('H2CO3', 'H2O<sub class = "small">(l)</sub> + CO2<sub class = "small">(g)</sub>', $equation);
+	}*/
 	
 	//Value for formatted equation
 	$formatted = $equation;
@@ -644,11 +652,11 @@ function formatEquation($equation){
 			
 			//Add state symbols
 			if(isSoluble($molecule)){
-				if( (strpos($molecule, "<sub class = 'small'>(s)</sub>") === false) && (strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false) ){
+				if(strpos($molecule, "<sub class = 'small'>(") === false){
 					$molecule .= "<sub class = 'small'>(aq)</sub>";
 				}
 			}else{
-				if( (strpos($molecule, "<sub class = 'small'>(s)</sub>") === false) && (strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false) ){
+				if(strpos($molecule, "<sub class = 'small'>(") === false){
 					$molecule .= "<sub class = 'small'>(s)</sub>";
 				}
 			}
@@ -660,6 +668,75 @@ function formatEquation($equation){
 	}
 	
 	return $formatted;
+}
+
+//Returns an array with the first slot being the base, second slot acid (with number of hydrogens it donates), and anything else in the other slots
+function splitAcidBase($molecules){
+	
+	//Array to hold strong acids
+	$strongAcids = array(
+		'HI' => array('H', 'I'),
+		'Br' => array('H', 'Br'),
+		'HI' => array('H', 'I'),
+		'HClO4' => array('H', 'ClO4'),
+		'HCl' => array('H', 'Cl'),
+		'H2SO4' => array('H', 'HSO4'),
+		'HNO3' => array('H', 'NO3'),
+	);
+		
+	//Array to hold strong bases
+	$strongBases = array(
+		'NaOH' => array('Na', 'OH'),
+		'KOH' => array('K', 'OH'),
+		'LiOH' => array('Li', 'OH'),
+		'RbOH' => array('Rb', 'OH'),
+		'CsOH' => array('Cs', 'OH'),
+		'Ca(OH)2' => array('Ca', 'OH', 'OH'),
+		'Ba(OH)2' => array('Ba', 'OH', 'OH'),
+		'Sr(OH)2' => array('Sr', 'OH', 'OH')
+	);
+	
+	//Holds weak acids: form of array: Hydrogen, Conjugate Base, Other stuff
+	$weakAcids = array(
+		'HF' => array('H', 'F'),
+		'H2S' => array('H', 'HS'),
+		'HS' => array('H', 'S'),
+		'HCOOH' => array('H', 'COOH'),
+		'CH3COOH' => array('H', 'CH3COO'),
+		'CCl3COOH' => array('H', 'CCl3COO')
+	);
+	
+	
+	//Holds weak bases: form of array: Hydrogen, Conjugate Acid, Other stuff
+	$weakBases = array(
+		'NH3' => array('NH4'),
+		'N(CH3)3' => array('HN(CH3)3'),
+		'C5H5N' => array('HC5H5N'),
+		'NH4OH' => array('NH4', 'OH'),
+		'HS' => array('H2S'),
+	);
+	
+	//Load conjugate bases
+	foreach($weakBases as $base){
+		if(!in_array($base, $weakAcids)){
+			$weakAcids[] = $base[0];
+		}
+	}
+	
+	//Load conjugate acids
+	foreach($weakAcids as $acid){
+		if(!in_array($acid, $weakBases)){
+			$weakBases[] = $acid[1];
+		}
+	}
+	/*echo '<p>';
+	print_r($weakBases);
+	echo '</p>';
+	print_r($weakAcids);*/
+	
+	//Array to hold ions
+	$ions = array();
+	
 }
 
 //Converts from roman numerals to arabic numbering
