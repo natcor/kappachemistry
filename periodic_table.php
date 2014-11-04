@@ -369,6 +369,12 @@ function getTable($element, $property, $array = null){
 				"molar_mass" => 59.04, 
 				"electronegativity" => 3,
 				"charge" => -1
+			),
+			"(NO2)" => array(
+				"name" => 'acetate',
+				"molar_mass" => 46.01, 
+				"electronegativity" => 3,
+				"charge" => -1
 			)
 		)
 	);
