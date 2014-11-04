@@ -359,6 +359,10 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 //Using Peter's better version an array with the actual subscripts for the anion and cation
 function matchCharges($cation, $anion, $usePetersBetterVersion = false){
 	
+	//strip the ions and cations down to just the ions
+	$cation = splitEquation($cation)[0];
+	$anion = splitEquation($anion)[0];
+	
 	//Get the common charges of the cation. If it is an element with multiple charges, find the correct charge from the global session variable
 	if(is_numeric(getTable($cation, 'charge')) ){
 		$cCharge = getTable($cation, 'charge');
@@ -556,6 +560,9 @@ function balanceEquation($reactants, $products){
 	$f = matchCharges($products[0], $products[1], true)['anion'];
 	$g = matchCharges($products[2], $products[3], true)['cation'];
 	$h = matchCharges($products[2], $products[3], true)['anion'];
+	
+
+	
 	
 	//Assign values to trailing numbers using ternary operator -- DEPRECATED (such a cody and legit word)
 	/*$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
