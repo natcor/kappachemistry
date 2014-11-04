@@ -14,7 +14,7 @@ function getPrecipitation($reactants){
 		if(!isSoluble($molecule)){
 			isSoluble($molecule, true);
 			$_SESSION['work'][] = "$molecule is already a solid, silly.  Good luck trying to mix it.";
-			return "$reactants --> No Precipitation Reaction";
+			return false;
 		}
 	}
 	
@@ -54,7 +54,7 @@ function getPrecipitation($reactants){
 	}
 	
 	if(count($precipitates) < 1){
-		return "$reactants --> No Precipitation Reaction";
+		return false;
 	}
 	
 	if(count($precipitates == 1)){
@@ -110,7 +110,7 @@ function getAcidBase($equation){
 		$products .= formatEquation(matchCharges($ions[0], $ions[1]));
 		
 	}else{
-		return "$equation --> No Acid-Base Reaction";
+		return false;
 	}
 	
 	return formatEquation($equation) . ' --> ' . $products;

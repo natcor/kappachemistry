@@ -601,6 +601,21 @@ function balanceEquation($reactants, $products){
 //Returns formatted equation
 function formatEquation($equation){
 	
+	
+	//Remove parenthesis if it has a single polyatomic
+	foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
+	
+		//If a polyatomic exists
+		if(strpos($equation, $poly) !== false){
+			
+			if( (!isset($equation{strpos($equation, $poly) + strlen($poly)})) || (!is_numeric($equation{strpos($equation, $poly) + strlen($poly)}))){
+				$changed = strtr($poly, array('(' => '', ')' => ''));	
+				$equation = str_replace($poly, $changed, $equation);
+			}
+			
+		}
+	}	
+	
 	//Value for formatted equation
 	$formatted = $equation;
 	
@@ -608,28 +623,33 @@ function formatEquation($equation){
 	$molecules = array_unique(splitEquation($equation, 2));
 	
 	//Replace all numbers as subscripts
-	$numbers = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
-	foreach($numbers as $number){
+	
+	foreach($molecules as &$molecule){
+	
+		//Array to hold all single digit numbers
+		$numbers = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
 		
-		foreach($molecules as &$molecule){
+		$original = $molecule;
+		foreach($numbers as $number){
 			
-			//Replace
-			$original = $molecule;
+			
 			$molecule = str_replace($number, "<sub class = 'small'>$number</sub>", $molecule);
 			
 			//Add state symbols
 			if(isSoluble($molecule)){
-				if(strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false){
+				if( (strpos($molecule, "<sub class = 'small'>(s)</sub>") === false) && (strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false) ){
 					$molecule .= "<sub class = 'small'>(aq)</sub>";
 				}
 			}else{
-				if(strpos($molecule, "<sub class = 'small'>(s)</sub>") === false){
+				if( (strpos($molecule, "<sub class = 'small'>(s)</sub>") === false) && (strpos($molecule, "<sub class = 'small'>(aq)</sub>") === false) ){
 					$molecule .= "<sub class = 'small'>(s)</sub>";
 				}
 			}
 			
-			$formatted = str_replace($original, $molecule, $formatted);
+			
 		}
+		
+		$formatted = str_replace($original, $molecule, $formatted);
 	}
 	
 	return $formatted;

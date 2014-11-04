@@ -1,7 +1,7 @@
 <?php
 
 //Create options to be preset into the search box
-$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)');
+$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)','Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )');
 $num = rand(0, count($options) - 1);
 
 //Start the session and set up the variables
@@ -76,7 +76,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	if(empty($_SESSION['errors'])){
 		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-		//$acidResult = getAcidBase(returnReactants($_POST['equation']));
+		$acidResult = getAcidBase(returnReactants($_POST['equation']));
+		
+		$results = array($precipResult, $acidResult);
+		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
+		foreach($results as $result){
+			if($result){
+				$print = $result;
+				break;
+			}
+		}
 	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
@@ -88,7 +97,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		</div></div>';
 	
 	}else{ //No Errors	
-		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$precipResult</p></div>";
+		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
 			echo '<div><ul class = "work" style = "display: table; margin: 0 auto;">';
