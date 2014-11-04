@@ -24,6 +24,23 @@ a:hover {
  * Base structure
  */
 
+.work li{
+	padding:5px;
+	list-style-image: url('arrow.png');
+}
+
+#results{
+	margin-top:80px;
+	padding-top:20px;
+	padding-bottom:10px;
+	border-top:1px solid #4D4D4D;
+}
+#error{
+	margin-top:80px;
+	padding-top:0px;
+	padding-bottom:10px;
+	border-top:1px solid #4D4D4D;
+}
 html,
 body {
   height: 100%;
@@ -156,11 +173,17 @@ body {
     width: 100%; /* Must be percentage or pixels for horizontal alignment */
   }
 }
-
+.small{
+	font-size:15px;
+}
 @media (min-width: 992px) {
   .masthead,
   .mastfoot,
   .cover-container {
     width: 700px;
   }
+}
+
+body{
+	zoom: 1.1; 
 }

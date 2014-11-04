@@ -404,7 +404,7 @@ function isSoluble($molecule, $showWork = false){
 	$halide_exceptions = array('Cu', 'Pb', 'Hg', 'Ag');
 	$soluble = array('(NH4)', '(NO3)', '(ClO3)', '(ClO4)', '(C2H3O2)', '(CH3COO)');
 	$halide_exceptions = array('Ag' => 1, 'Pb' => 2, 'Hg2' => 2, 'Cu' => 1); //Format is atom => charge
-	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2'); 
+	$sulfate_exceptions = array('Ba', 'Sr', 'Ca', 'Pb', 'Hg2', 'Ag'); 
 	$hydroxide_exceptions = array('Ba', 'Ca', 'Sr');
 	
 	//Add all alkali metals to the $soluble array
@@ -612,7 +612,7 @@ function formatEquation($equation){
 					$molecule .= "<sub class = 'small'>(aq)</sub>";
 				}
 			}else{
-				if(strpos($molecule, "<sub class = 'small'>(s)</sub>") !== false){
+				if(strpos($molecule, "<sub class = 'small'>(s)</sub>") === false){
 					$molecule .= "<sub class = 'small'>(s)</sub>";
 				}
 			}

@@ -3,7 +3,7 @@
 function getPrecipitation($reactants){
 	
 	//Convert words
-	$reactants = convertWords($reactants);
+	//$reactants = convertWords($reactants);
 	
 	//Check if the reaction is valid for a precipitation (i.e. if the charges of the atoms match)
 	if(!isValid($reactants)){
@@ -40,6 +40,7 @@ function getPrecipitation($reactants){
 	//Check every possible anion/cation possiblility for solubility
 	foreach($cations as $cation){
 		foreach($anions as $anion){
+			
 			if(!isSoluble(matchCharges($cation, $anion), true) ){ //If the combination is soluble
 				
 				//Remove the precipitate ions from the reactants array

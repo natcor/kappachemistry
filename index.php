@@ -27,6 +27,7 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
+
 </head>
 <body>
 	<!-- taken from bs -->
@@ -40,16 +41,14 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
 	    <p class="lead text-center">No longer a fractal of bad design</p>
             <p class="lead">
-		<form action = 'index.php' method = 'post' autocomplete="off">
+		<form action = 'index.php' method = 'post' autocomplete="off" id = 'form'>
 		<div class="form-group col-md-10 col-md-offset-1">
 		<input type = "text" class = "form-control" name = "equation" id = "equation" placeholder = "<?php echo $options[$num] ?>" value = "<?php
-		//don't think u need this: if(isset($_POST['equation'])){
+		 if(isset($_POST['equation'])){
 		echo $_POST['equation'];
-		//}?>" />
+		}?>" />
 		</div>
-		<div class="form-group">
-		<button type="submit" name="submit" class="btn btn-lg btn-default center-block" value="Solve">Solve</button>
-		</div>
+		
 		</form>
 	    </p>
 	    
@@ -77,22 +76,22 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	if(empty($_SESSION['errors'])){
 		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-		$acidResult = getAcidBase(returnReactants($_POST['equation']));
+		//$acidResult = getAcidBase(returnReactants($_POST['equation']));
 	}
 	
 	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
-		echo '<div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
+		echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
 		foreach($_SESSION['errors'] as $error){
-			echo '' . $error . '<br />'; // UM SO I COULDNT GET LIST ELEMENTS TO NOT APPEAR ATROCIOUS SO THEYRE GONE
+			echo '' . $error . '<br />'; 
 		}
 		echo '</p>Please fix and re-submit.
-		</div>';
+		</div></div>';
 	
 	}else{ //No Errors	
-		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$precipResult<br />$acidResult</p>";
+		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$precipResult</p></div>";
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
-			echo '<p class = "lead text-center" style="margin: 0">Explanation</p><ul class = "work" style = "display: table; margin: 0 auto;">';
+			echo '<div><ul class = "work" style = "display: table; margin: 0 auto;">';
 			foreach($_SESSION['work'] as $step){
 				echo '<li>' . $step . '</li>';
 			}
@@ -107,12 +106,6 @@ session_unset();
 ?>
 
 
-          </div>
-
-          <div class="mastfoot">
-            <div class="inner">
-              <p>Whatever you want to go here</p>
-            </div>
           </div>
 
         </div>
