@@ -561,13 +561,6 @@ function balanceEquation($reactants, $products){
 	$g = matchCharges($products[2], $products[3], true)['cation'];
 	$h = matchCharges($products[2], $products[3], true)['anion'];
 	
-<<<<<<< Updated upstream
-
-	
-=======
-	//echo "$a $b $c $d $e $f $g $h";
->>>>>>> Stashed changes
-	
 	//Assign values to trailing numbers using ternary operator -- DEPRECATED (such a cody and legit word)
 	/*$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
 	$b = (is_numeric(substr(trim($reactants[1]), -1, 1)) ? $b = substr(trim($reactants[1]), -1, 1) : $b = 1);
@@ -729,6 +722,7 @@ function splitAcidBase($molecules){
 			$weakBases[] = $acid[1];
 		}
 	}
+	
 	/*echo '<p>';
 	print_r($weakBases);
 	echo '</p>';

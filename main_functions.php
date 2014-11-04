@@ -104,7 +104,7 @@ function getAcidBase($equation){
 			}
 		}
 	}
-	
+	return false;
 	//Filter ions array
 	$ions = array_values(array_filter($ions));
 	
