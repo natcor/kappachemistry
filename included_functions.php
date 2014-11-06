@@ -658,13 +658,17 @@ function formatEquation($equation){
 			
 		}
 		
-		//Check for gasses and liquids
+		//Check for gasses and liquids -- needs to be coded more efficiently
 		if($original == 'H2O'){
 			$molecule = 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub>';
 			
 		}
 		if($original == 'H2'){
 			$molecule = 'H<sub class = "small">2</sub><sub class = "small">(g)</sub>';
+			
+		}
+		if($original == 'O2'){
+			$molecule = 'H=O<sub class = "small">2</sub><sub class = "small">(g)</sub>';
 			
 		}
 		

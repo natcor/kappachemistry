@@ -150,7 +150,7 @@ function getSynthesis($reactants){
 	if( (in_array('H', $atoms)) && (in_array('O', $atoms))){
 		$product = '<img src = "hindenburg.png" class = "blimp">';
 		$_SESSION['work'][] = "Never take chemistry from a German. Especially one alive during World War II. For more than one reason.";
-		return $reactants . ' --> ' . $product;
+		return formatEquation($reactants) . ' --> ' . $product;
 	}
 	
 	return balanceEquation($reactants, $product);
