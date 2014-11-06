@@ -180,7 +180,7 @@ function isValid($input){
 				}
 			}
 		}
-		//If the charge is not zero, set an error message and return false
+		//If the charge is not zero, return false
 		if($netCharge !== 0){
 			$_SESSION['errors'][] = 'There seems to be something fishy with the equation you entered. Perhaps you never passed basic addition in middle school. That might be it. Check your goddam charges.';
 			return false;
@@ -633,7 +633,8 @@ function formatEquation($equation){
 	//Replace all numbers as subscripts
 	
 	foreach($molecules as &$molecule){
-	
+		
+		
 		//Array to hold all single digit numbers
 		$numbers = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
 		
@@ -657,6 +658,16 @@ function formatEquation($equation){
 			
 		}
 		
+		//Check for gasses and liquids
+		if($original == 'H2O'){
+			$molecule = 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub>';
+			
+		}
+		if($original == 'H2'){
+			$molecule = 'H<sub class = "small">2</sub><sub class = "small">(g)</sub>';
+			
+		}
+		
 		$formatted = str_replace($original, $molecule, $formatted);
 	}
 	
@@ -664,7 +675,12 @@ function formatEquation($equation){
 }
 
 //Returns an array with the first slot being the base, second slot acid (with number of hydrogens it donates), and anything else in the other slots
-function splitAcidBase($molecules){
+function checkStrongReaction($molecules){
+	
+	//Remove parens
+	foreach($molecules as &$molecule){
+		$molecule = strtr($molecule, array('(' => '', ')' => ''));
+	}
 	
 	//Array to hold strong acids
 	$strongAcids = array(
@@ -684,9 +700,9 @@ function splitAcidBase($molecules){
 		'LiOH' => array('Li', 'OH'),
 		'RbOH' => array('Rb', 'OH'),
 		'CsOH' => array('Cs', 'OH'),
-		'Ca(OH)2' => array('Ca', 'OH', 'OH'),
-		'Ba(OH)2' => array('Ba', 'OH', 'OH'),
-		'Sr(OH)2' => array('Sr', 'OH', 'OH')
+		'CaOH2' => array('Ca', 'OH', 'OH'),
+		'BaOH2' => array('Ba', 'OH', 'OH'),
+		'SrOH2' => array('Sr', 'OH', 'OH')
 	);
 	
 	//Holds weak acids: form of array: Hydrogen, Conjugate Base, Other stuff
@@ -703,33 +719,19 @@ function splitAcidBase($molecules){
 	//Holds weak bases: form of array: Hydrogen, Conjugate Acid, Other stuff
 	$weakBases = array(
 		'NH3' => array('NH4'),
-		'N(CH3)3' => array('HN(CH3)3'),
+		'NCH33' => array('HNCH33'),
 		'C5H5N' => array('HC5H5N'),
 		'NH4OH' => array('NH4', 'OH'),
 		'HS' => array('H2S'),
 	);
 	
-	//Load conjugate bases
-	foreach($weakBases as $base){
-		if(!in_array($base, $weakAcids)){
-			$weakAcids[] = $base[0];
-		}
+	//If the reaction has a strong base AND strong acid
+	if( (count(array_intersect(array_keys($strongAcids), $molecules)) > 0) && (count(array_intersect(array_keys($strongBases), $molecules)) > 0) ){
+		return true;
 	}
 	
-	//Load conjugate acids
-	foreach($weakAcids as $acid){
-		if(!in_array($acid, $weakBases)){
-			$weakBases[] = $acid[1];
-		}
-	}
+	return false;
 	
-	/*echo '<p>';
-	print_r($weakBases);
-	echo '</p>';
-	print_r($weakAcids);*/
-	
-	//Array to hold ions
-	$ions = array();
 	
 }
 

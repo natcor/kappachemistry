@@ -72,41 +72,31 @@ function getPrecipitation($reactants){
 }
 
 //Checks where an acid base reaction is possible
-function getAcidBase($equation){
+function getAcidBase($reactants){
 	
-	//Split equation into molecules
-	$molecules = splitEquation($equation, 2);
 	
-	$ions = splitAcidBase($molecules);
-	//print_r($ions);
-
-	//Create array to hold soluble atoms
-	$ions = array();
-	
-	//Add all soluble atoms into the ions array, and remove parenthesis around polyatomics to make things like OH more accessible
-	foreach($molecules as $molecule){
-		if(isSoluble($molecule)){
-			$atoms = splitEquation($molecule);
-			foreach($atoms as $atom){
-				$ions[] = strtr($atom, array('(OH)' => 'OH'));
-			}
-		}
+	if(!isValid($reactants)){
+		return false;
 	}
 	
-	//Create array to hold the products
-	$products = '';
+	$strongReaction = checkStrongReaction(splitEquation($reactants, 2));
+
+	//Split equation into molecules
+	$ions = splitEquation($reactants);
 	
-	if( (in_array('H', $ions)) && (in_array('OH', $ions)) ){
-		$products .= 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub> + ';
+	//Array to hold products
+	$products = array();
+
+	//Test for water formation and add water if necessary
+	if( (in_array('(OH)', $ions)) && (in_array('H', $ions)) ){
+		$products[] = 'HOH';
 		foreach($ions as &$ion){
-			if( ($ion == 'H') || ($ion == 'OH') ){
+			if(($ion == 'H') || ($ion == '(OH)')){
 				$ion = '';
 			}
 		}
+		$ions = array_values(array_filter($ions));
 	}
-	return false;
-	//Filter ions array
-	$ions = array_values(array_filter($ions));
 	
 	//Ensure correct cation/anion order
 	if(getTable($ions[0], 'electronegativity') > getTable($ions[1], 'electronegativity')){
@@ -115,13 +105,56 @@ function getAcidBase($equation){
 	
 	//Add other molecule
 	if(count($ions) == 2){
-		$products .= formatEquation(matchCharges($ions[0], $ions[1]));
+		$products[] = matchCharges($ions[0], $ions[1]);
 		
 	}else{
 		return false;
 	}
 	
-	return formatEquation($equation) . ' --> ' . $products;
+	if($strongReaction){
+		$_SESSION['work'][] = "Water will be formed since it is a neutralization reaction of a strong acid and strong base.";
+		$symbol = ' --> ';
+	}else{
+		$symbol = ' <--> ';
+	}
+	$products = implode(' + ',$products);
+	return balanceEquation($reactants, $products);
+}
+
+function getSynthesis($reactants){
+	
+	//Split into atoms 
+	$atoms = array_values(array_unique(splitEquation($reactants)));
+	
+	//Check to ensure all are elements
+	foreach($atoms as $atom){
+		
+		//Check to ensure not a polyatomic
+		$polyatomics = array_keys(getTable(null, null, 'polyatomics'));
+		if(in_array($atom, $polyatomics)){
+			return false;
+		}
+	}
+	
+	//Ensure correct cation/anion order
+	if(getTable($atoms[0], 'electronegativity') > getTable($atoms[1], 'electronegativity')){
+		$atoms = array_reverse($atoms);
+	}
+	
+	$_SESSION['work'][] = "Basic combination reaction.";
+	
+	//Find the product
+	$product = matchCharges($atoms[0], $atoms[1]);
+	
+	//Check for hindenburg
+	if( (in_array('H', $atoms)) && (in_array('O', $atoms))){
+		$product = '<img src = "hindenburg.png" class = "blimp">';
+		$_SESSION['work'][] = "Never take chemistry from a German. Especially one alive during World War II. For more than one reason.";
+		return $reactants . ' --> ' . $product;
+	}
+	
+	return balanceEquation($reactants, $product);
+	
 }
 
 ?>

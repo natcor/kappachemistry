@@ -23,7 +23,11 @@ a:hover {
 /*
  * Base structure
  */
-
+.blimp{
+	border-radius:30px;
+	padding:10px;
+	height:130px;
+}
 .work li{
 	padding:5px;
 	list-style-image: url('arrow.png');

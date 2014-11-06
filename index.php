@@ -75,28 +75,34 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 	//Remove any reaction arrows from equation and run it through the check precipitation function
 	if(empty($_SESSION['errors'])){
+		
 		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
+		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
 		$acidResult = getAcidBase(returnReactants($_POST['equation']));
 		
-		$results = array($precipResult, $acidResult);
+		
+		$found = null;
+		$results = array($precipResult, $acidResult, $synthesisResult);
 		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
 		foreach($results as $result){
 			if($result){
 				$print = $result;
+				$found = true;
 				break;
 			}
 		}
 	}
-	
-	if(!empty($_SESSION['errors'])){ //If there are items in the errors array
-		echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
-		foreach($_SESSION['errors'] as $error){
-			echo '' . $error . '<br />'; 
+	if(!$found){
+		if(!empty($_SESSION['errors'])){ //If there are items in the errors array
+			$_SESSION['errors'] = array_unique($_SESSION['errors']);
+			echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
+			foreach($_SESSION['errors'] as $error){
+				echo '' . $error . '<br />'; 
+			}
+			echo '</p>Please fix and re-submit.
+			</div></div>';
 		}
-		echo '</p>Please fix and re-submit.
-		</div></div>';
-	
-	}else{ //No Errors	
+	}else{ //Has a result
 		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
