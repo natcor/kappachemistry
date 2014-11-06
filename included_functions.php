@@ -658,7 +658,7 @@ function formatEquation($equation){
 			
 		}
 		
-		//Check for gasses and liquids -- needs to be coded more efficiently
+		//Check for gasses and liquids -- needs to be re written
 		if($original == 'H2O'){
 			$molecule = 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub>';
 			
@@ -668,7 +668,7 @@ function formatEquation($equation){
 			
 		}
 		if($original == 'O2'){
-			$molecule = 'H=O<sub class = "small">2</sub><sub class = "small">(g)</sub>';
+			$molecule = 'O<sub class = "small">2</sub><sub class = "small">(g)</sub>';
 			
 		}
 		
