@@ -141,19 +141,19 @@ function getSynthesis($reactants){
 		$atoms = array_reverse($atoms);
 	}
 	
-	$_SESSION['work'][] = "Basic combination reaction.";
+	$_SESSION['work'][] = "Basic synthesis reaction.";
 	
 	//Find the product
 	$product = matchCharges($atoms[0], $atoms[1]);
 	
 	//Check for hindenburg
 	if( (in_array('H', $atoms)) && (in_array('O', $atoms))){
-		$product = '<img src = "hindenburg.png" class = "blimp">';
+		$product = '<img src = "hindenburg.png" class = "image">';
 		$_SESSION['work'][] = "Never take chemistry from a German. Especially one alive during World War II. For more than one reason.";
 		return formatEquation($reactants) . ' --> ' . $product;
 	}
 	
-	return balanceEquation($reactants, $product);
+	return balanceSynthesis(splitEquation($reactants, 2), $product);
 	
 }
 

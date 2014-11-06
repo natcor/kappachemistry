@@ -528,6 +528,67 @@ function isSoluble($molecule, $showWork = false){
 	return false;
 }
 
+//Balances equations in the form of Aa + Bb --> AcBd
+function balanceSynthesis($reactants, $product){
+
+	//Align correctly
+	if( $reactants[0] !== splitEquation($product)[0] ){
+		$reactants = array_reverse($reactants);
+	}
+	
+	
+	
+	$reactants = array_values(splitEquation(implode(' + ', $reactants), 3));
+	
+	//Check for exceptions
+	$toTest = array_values(splitEquation(implode(' + ', $reactants), 4));
+	if( (in_array('C', $toTest)) && (in_array('O', $toTest)) ){
+		$additional = '2C + O2 --> <img src = "carbonmonoxide.png" class = "blimp">';
+		$_SESSION['work'][] = "ANNIE ARE YOU OK, ARE YOU OK ANNIE? ANNIE ARE YOU OK, ARE YOU OK ANNIE! YOU\'VE BEEN HIT BY - (DUN) - YOU\'VE BEEN STRUCK BY -(DUN)- CARBON MONOXIDE!";	
+	}
+	
+	//Get variable values - ternary operator comes in handy once again
+	$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
+	$b = (is_numeric(substr(trim($reactants[1]), -1, 1)) ? $b = substr(trim($reactants[1]), -1, 1) : $b = 1);
+	
+	$c = matchCharges($reactants[0], $reactants[1], true)['cation'];
+	$d = matchCharges($reactants[0], $reactants[1], true)['anion'];
+	
+	//let x = 1
+	$x = 12;
+	$z = ($x * $a)/$c;
+	$y = ($x * $a * $d)/($b * $c);
+	
+	$nums = array($x, $y, $z);
+
+	//If possible find greatest common factor of the coefficients
+	$lcd = array_reduce(array($x, $y, $z), 'gcf');
+	
+	if(is_int($lcd)){
+		
+		//Simplify coefficients
+		foreach($nums as &$num){
+			$num = $num/$lcd;
+		}
+	}
+	
+	$_SESSION['work'][] = "To balance the synthesis equation, requires a ratio of $nums[0]:$nums[1] --> $nums[2] for the atoms.";
+	
+	//If coefficient is one, remove it
+	foreach($nums as &$num){
+		if($num == 1){
+			$num = '';
+		}
+	}
+	
+	//Return formatted equation with state symbols
+	if(!$additional){
+		return formatEquation("$nums[0]$reactants[0] + $nums[1]$reactants[1]") .  " --> " . formatEquation("$nums[2]$product");
+	}else{
+		return formatEquation("$nums[0]$reactants[0] + $nums[1]$reactants[1]") .  " --> " . formatEquation("$nums[2]$product") . '</br></br>' . $additional;
+	}
+}
+
 //Takes input reactants and products, both strings. Outputs a complete string that is the balanced equation, using --> as a yields symbol
 function balanceEquation($reactants, $products){
 	
@@ -535,9 +596,9 @@ function balanceEquation($reactants, $products){
 	$first = $reactants;
 	$second = $products;
 	
-	
+	//This area is poorly written. If you see a more effective strategy feel free to implement it.
 	$first = splitEquation($first, 2);
-	$second = splitEquation($second, 2); //This area is poorly written. If you see a more effective strategy feel free to implement it.
+	$second = splitEquation($second, 2); 
 	
 	if(splitEquation($first[0], 4)[0] !== splitEquation($second[0], 4)[0]){
 		$first = array_reverse($first);
@@ -669,6 +730,10 @@ function formatEquation($equation){
 		}
 		if($original == 'O2'){
 			$molecule = 'O<sub class = "small">2</sub><sub class = "small">(g)</sub>';
+			
+		}
+		if($original == 'CO2'){
+			$molecule = 'CO<sub class = "small">2</sub><sub class = "small">(g)</sub>';
 			
 		}
 		

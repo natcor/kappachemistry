@@ -1,5 +1,6 @@
-<?php
 
+<?php
+echo "<img src = 'carbonmonoxide.png' />";
 //Create options to be preset into the search box
 $options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)','Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )');
 $num = rand(0, count($options) - 1);

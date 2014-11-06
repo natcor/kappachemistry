@@ -9,6 +9,13 @@ function getTable($element, $property, $array = null){
 		//Create an array for each group
 		"group1" => array(
 			//Data in each elements array are as follows: atomic number, molar mass, electronegativiy
+			"C" => array(
+				"atomic_number" => 1,
+				"molar_mass" => 1.008, 
+				"electronegativity" => 2.1,
+				"charge" => 4,
+				"reactivity" => 16
+			),
 			"H" => array(
 				"atomic_number" => 1,
 				"molar_mass" => 1.008, 
