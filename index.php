@@ -1,8 +1,7 @@
 
 <?php
-echo "<img src = 'carbonmonoxide.png' />";
 //Create options to be preset into the search box
-$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)','Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )');
+$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)');
 $num = rand(0, count($options) - 1);
 
 //Start the session and set up the variables
@@ -40,7 +39,7 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 
           <div class="inner cover">
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
-	    <p class="lead text-center">No longer a fractal of bad design</p>
+	    <p class="lead text-center">An Independent, Algorithmic Product Predictor</p>
             <p class="lead">
 		<form action = 'index.php' method = 'post' autocomplete="off" id = 'form'>
 		<div class="form-group col-md-10 col-md-offset-1">
@@ -75,14 +74,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	}
 
 	//Remove any reaction arrows from equation and run it through the check precipitation function
+	$found = null;
 	if(empty($_SESSION['errors'])){
 		
 		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
 		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
 		$acidResult = getAcidBase(returnReactants($_POST['equation']));
-		
-		
-		$found = null;
 		$results = array($precipResult, $acidResult, $synthesisResult);
 		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
 		foreach($results as $result){
@@ -100,6 +97,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			foreach($_SESSION['errors'] as $error){
 				echo '' . $error . '<br />'; 
 			}
+			echo '</p>Please fix and re-submit.
+			</div></div>';
+		}else{
+			echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
+			echo 'Congratulations, you\'ve stumped us. I hope you feel proud.';
 			echo '</p>Please fix and re-submit.
 			</div></div>';
 		}

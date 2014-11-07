@@ -32,7 +32,9 @@ a:hover {
 	padding:5px;
 	list-style-image: url('arrow.png');
 }
-
+.work{
+	padding-bottom:70px;
+}
 #results{
 	margin-top:80px;
 	padding-top:20px;

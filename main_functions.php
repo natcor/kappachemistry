@@ -42,7 +42,6 @@ function getPrecipitation($reactants){
 		foreach($anions as $anion){
 			
 			if(!isSoluble(matchCharges($cation, $anion), true) ){ //If the combination is soluble
-				
 				//Remove the precipitate ions from the reactants array
 				unset($cations[array_search($cation, $cations)]);
 				unset($anions[array_search($anion, $anions)]);
@@ -79,8 +78,8 @@ function getAcidBase($reactants){
 		return false;
 	}
 	
-	$strongReaction = checkStrongReaction(splitEquation($reactants, 2));
-
+	$acidBase = checkAcidBase(splitEquation($reactants, 2));
+	
 	//Split equation into molecules
 	$ions = splitEquation($reactants);
 	
@@ -96,6 +95,16 @@ function getAcidBase($reactants){
 			}
 		}
 		$ions = array_values(array_filter($ions));
+	}else{
+		//If not hydrogen and hydroxide check for week base /acids
+		if( (isset($acidBase[0])) && (isset($acidBase[1] )) ){
+			
+			$product = $acidBase[0][1] . " + " . $acidBase[1][0];
+			$_SESSION['work'][] = $acidBase[0][1] . " accepts the proton(s), " . $acidBase[0][1] . " is the donor.";
+			return "$reactants --> $product";
+			
+		}
+		
 	}
 	
 	//Ensure correct cation/anion order
@@ -111,7 +120,8 @@ function getAcidBase($reactants){
 		return false;
 	}
 	
-	if($strongReaction){
+	//Check if it is a strong reaction or not
+	if($acidBase[2]){
 		$_SESSION['work'][] = "Water will be formed since it is a neutralization reaction of a strong acid and strong base.";
 		$symbol = ' --> ';
 	}else{
@@ -145,13 +155,6 @@ function getSynthesis($reactants){
 	
 	//Find the product
 	$product = matchCharges($atoms[0], $atoms[1]);
-	
-	//Check for hindenburg
-	if( (in_array('H', $atoms)) && (in_array('O', $atoms))){
-		$product = '<img src = "hindenburg.png" class = "image">';
-		$_SESSION['work'][] = "Never take chemistry from a German. Especially one alive during World War II. For more than one reason.";
-		return formatEquation($reactants) . ' --> ' . $product;
-	}
 	
 	return balanceSynthesis(splitEquation($reactants, 2), $product);
 	

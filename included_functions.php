@@ -427,6 +427,7 @@ function isSoluble($molecule, $showWork = false){
 			if($showWork){
 				$_SESSION['work'][] = $molecule .  " is soluble: ammonium, nitrate, chlorate, perchlorate, and acetate salts are always soluble.";
 			}
+			
 			return true;
 		}
 	}
@@ -528,6 +529,9 @@ function isSoluble($molecule, $showWork = false){
 	return false;
 }
 
+//Balance non-strong acid base
+//Balances equations of the form Aa + Bb --
+
 //Balances equations in the form of Aa + Bb --> AcBd
 function balanceSynthesis($reactants, $product){
 
@@ -541,11 +545,21 @@ function balanceSynthesis($reactants, $product){
 	$reactants = array_values(splitEquation(implode(' + ', $reactants), 3));
 	
 	//Check for exceptions
-	$toTest = array_values(splitEquation(implode(' + ', $reactants), 4));
-	if( (in_array('C', $toTest)) && (in_array('O', $toTest)) ){
-		$additional = '2C + O2 --> <img src = "carbonmonoxide.png" class = "blimp">';
-		$_SESSION['work'][] = "ANNIE ARE YOU OK, ARE YOU OK ANNIE? ANNIE ARE YOU OK, ARE YOU OK ANNIE! YOU\'VE BEEN HIT BY - (DUN) - YOU\'VE BEEN STRUCK BY -(DUN)- CARBON MONOXIDE!";	
+	$fullSplit = array_values(splitEquation(implode(' + ', $reactants), 4));
+	$partialSplit = array_values(splitEquation(implode(' + ', $reactants), 3));
+	$additional = '';
+	if( (in_array('C', $fullSplit)) && (in_array('O', $fullSplit)) ){
+		$additional = '2C + O<sub class "small">2</sub> --> <img src = "carbonmonoxide.png" class = "image">';
+		$_SESSION['work'][] = "Don't screw with carbon monoxide. Actually, it's totally harmless. Go turn on your 1920's Model T and sit in it for approximately two hours. Or find an active volcano.";	
 	}
+	
+	if( (in_array('H2', $partialSplit)) && (in_array('O2', $partialSplit)) ){
+		$additional = 'H<sub class = "small">2</sub> + O<sub class = "small">2</sub> --> <img src = "hindenburg.png" class = "image">';
+		$_SESSION['work'][] = "Never take chemistry from a German. Especially one alive during World War II. For more than one reason!";
+		return $additional;
+		
+	}
+	
 	
 	//Get variable values - ternary operator comes in handy once again
 	$a = (is_numeric(substr(trim($reactants[0]), -1, 1)) ? $a = substr(trim($reactants[0]), -1, 1) : $a = 1);
@@ -724,6 +738,10 @@ function formatEquation($equation){
 			$molecule = 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub>';
 			
 		}
+		if($original == 'HOH'){
+			$molecule = 'H<sub class = "small">2</sub>O<sub class = "small">(l)</sub>';
+			
+		}
 		if($original == 'H2'){
 			$molecule = 'H<sub class = "small">2</sub><sub class = "small">(g)</sub>';
 			
@@ -744,11 +762,12 @@ function formatEquation($equation){
 }
 
 //Returns an array with the first slot being the base, second slot acid (with number of hydrogens it donates), and anything else in the other slots
-function checkStrongReaction($molecules){
+function checkAcidBase($molecules){
 	
 	//Remove parens
 	foreach($molecules as &$molecule){
 		$molecule = strtr($molecule, array('(' => '', ')' => ''));
+		$molecule = trim($molecule);
 	}
 	
 	//Array to hold strong acids
@@ -781,7 +800,8 @@ function checkStrongReaction($molecules){
 		'HS' => array('H', 'S'),
 		'HCOOH' => array('H', 'COOH'),
 		'CH3COOH' => array('H', 'CH3COO'),
-		'CCl3COOH' => array('H', 'CCl3COO')
+		'CCl3COOH' => array('H', 'CCl3COO'),
+		'NH4' => array('H', 'NH3')
 	);
 	
 	
@@ -794,10 +814,36 @@ function checkStrongReaction($molecules){
 		'HS' => array('H2S'),
 	);
 	
-	//If the reaction has a strong base AND strong acid
-	if( (count(array_intersect(array_keys($strongAcids), $molecules)) > 0) && (count(array_intersect(array_keys($strongBases), $molecules)) > 0) ){
-		return true;
+	//If the reaction has a strong base AND strong acid return them
+	$acid = array_values(array_intersect(array_keys($strongAcids), $molecules));
+	$base = array_values(array_intersect(array_keys($strongBases), $molecules));
+
+	if( (count($acid) > 0) && (count($base) > 0)){
+		return array($strongAcids[$acid[0]], $strongBases[$base[0]], true);
 	}
+	
+	//If the reaction has a weak base AND weak acid return them
+	$acid = array_values(array_intersect(array_keys($weakAcids), $molecules));
+	$base = array_values(array_intersect(array_keys($weakBases), $molecules));
+	if( (count($acid) > 0) && (count($base) > 0)){
+		return array($weakAcids[$acid[0]], $weakBases[$base[0]], false);
+	}
+	
+	//Strong acid weak base
+	$acid = array_values(array_intersect(array_keys($strongAcids), $molecules));
+	$base = array_values(array_intersect(array_keys($weakBases), $molecules));
+	if( (count($acid) > 0) && (count($base) > 0)){
+		return array($strongAcids[$acid[0]], $weakBases[$base[0]], false);
+	}
+	
+	//Weak acid strong base
+	$acid = array_values(array_intersect(array_keys($weakAcids), $molecules));
+	$base = array_values(array_intersect(array_keys($strongBases), $molecules));
+	if( (count($acid) > 0) && (count($base) > 0)){
+		return array($weakAcids[$acid[0]], $strongBases[$base[0]], false);
+		
+	}
+	
 	
 	return false;
 	
