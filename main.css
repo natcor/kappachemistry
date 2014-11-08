@@ -23,6 +23,21 @@ a:hover {
 /*
  * Base structure
  */
+
+.navbar{
+	float:right;
+	margin-top:-180px;
+	margin-right:30px;
+}
+.navbar a{
+	
+	padding:8px;
+	padding-right:8px;
+}
+.link{
+	border-right:1px solid #4D4D4D;
+	
+}
 .image{
 	border-radius:30px;
 	padding:10px;
@@ -191,5 +206,5 @@ body {
 }
 
 body{
-	zoom: 1.1; 
+	zoom: 1.2; 
 }

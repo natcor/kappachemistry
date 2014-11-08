@@ -4,11 +4,49 @@
 $options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)');
 $num = rand(0, count($options) - 1);
 
+$title = 'An Algorithmic Chemical Equation Predictor';
+
 //Start the session and set up the variables
 session_start();
 $_SESSION['work'] = array(); //Variable to hold work to be shown
 $_SESSION['errors'] = array();  //Variable to hold errors throughout
 $_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
+
+//Require access to php pages with functions
+require('main_functions.php');
+require('included_functions.php');
+require('periodic_table.php');
+
+//Check for form submission
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+	
+	//Ensure that the user entered something
+	if(strlen($_POST['equation']) < 2){
+		
+		$_SESSION['errors'][] = 'Enter valid reactants, silly.'; 
+	}
+
+	//Remove any reaction arrows from equation and run it through the check precipitation function
+	$found = false;
+	if(empty($_SESSION['errors'])){
+		
+		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
+		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
+		$acidResult = getAcidBase(returnReactants($_POST['equation']));
+		$results = array($precipResult, $acidResult, $synthesisResult);
+		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
+		foreach($results as $result){
+			if($result){
+				$print = $result;
+				$found = true;
+				break;
+			}
+		}
+		if(!$found){
+			$title = 'Forever and Always a Fragment of Bad Design';
+		}
+	}
+}
 
 ?>
 
@@ -16,7 +54,9 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Kappa Chemical</title>
+	<title>Kappa Chemistry</title>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<!--BS CDN--->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" />
 	<!-- stuff in main.css will override the default bs stylesheet -->
@@ -32,14 +72,18 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
 <body>
 	<!-- taken from bs -->
     <div class="site-wrapper">
-
+	
       <div class="site-wrapper-inner">
-
+     	   <div class = "navbar">
+     		   <a href = "#" class = "link">Contact</a>
+     		   <a href = "#" class = "link">About</a>
+     		   <a href = "#">Examples</a>
+     	   </div>
         <div class="cover-container">
-
+     	 
           <div class="inner cover">
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
-	    <p class="lead text-center">An Independent, Algorithmic Product Predictor</p>
+	    <p class="lead text-center"><?php echo $title ?></p>
             <p class="lead">
 		<form action = 'index.php' method = 'post' autocomplete="off" id = 'form'>
 		<div class="form-group col-md-10 col-md-offset-1">
@@ -57,39 +101,8 @@ $_SESSION['transitions'] = array(); //Variable to hold charges of metals that ca
     <!-- / taken from bs -->
 
 <?php
-$pageTitle = 'Home';
-
-//Require access to php pages with functions
-require('main_functions.php');
-require('included_functions.php');
-require('periodic_table.php');
-
-//Check for form submission
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
+if(isset($found)){
 	
-	//Ensure that the user entered something
-	if(strlen($_POST['equation']) < 2){
-		
-		$_SESSION['errors'][] = 'Enter valid reactants, silly.'; 
-	}
-
-	//Remove any reaction arrows from equation and run it through the check precipitation function
-	$found = null;
-	if(empty($_SESSION['errors'])){
-		
-		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
-		$acidResult = getAcidBase(returnReactants($_POST['equation']));
-		$results = array($precipResult, $acidResult, $synthesisResult);
-		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
-		foreach($results as $result){
-			if($result){
-				$print = $result;
-				$found = true;
-				break;
-			}
-		}
-	}
 	if(!$found){
 		if(!empty($_SESSION['errors'])){ //If there are items in the errors array
 			$_SESSION['errors'] = array_unique($_SESSION['errors']);
@@ -101,9 +114,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			</div></div>';
 		}else{
 			echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
-			echo 'Congratulations, you\'ve stumped us. I hope you feel proud.';
+			echo 'As of yet, we do not support that type of reaction. Check back soon!';
+			
 			echo '</p>Please fix and re-submit.
 			</div></div>';
+			
+			//Change title
+			$_POST['title'] = 'Forever a Fragment of Bad Design';
 		}
 	}else{ //Has a result
 		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
@@ -117,6 +134,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		echo "</ul></div>";
 	}
 }
+	
 
 //Unset all the session variables
 session_unset();

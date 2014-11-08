@@ -78,6 +78,10 @@ function getAcidBase($reactants){
 		return false;
 	}
 	
+	//Make sure that there is at least two molecules	
+	if(count(splitEquation($reactants, 2)) < 2){
+		return false;
+	}
 	$acidBase = checkAcidBase(splitEquation($reactants, 2));
 	
 	//Split equation into molecules
@@ -100,7 +104,7 @@ function getAcidBase($reactants){
 		if( (isset($acidBase[0])) && (isset($acidBase[1] )) ){
 			
 			$product = $acidBase[0][1] . " + " . $acidBase[1][0];
-			$_SESSION['work'][] = $acidBase[0][1] . " accepts the proton(s), " . $acidBase[0][1] . " is the donor.";
+			$_SESSION['work'][] = $acidBase[0][1] . " accepts the proton(s), " . $acidBase[1][0] . " is the donor.";
 			return "$reactants --> $product";
 			
 		}
@@ -128,13 +132,19 @@ function getAcidBase($reactants){
 		$symbol = ' <--> ';
 	}
 	$products = implode(' + ',$products);
+	
 	return balanceEquation($reactants, $products);
 }
 
 function getSynthesis($reactants){
 	
 	//Split into atoms 
-	$atoms = array_values(array_unique(splitEquation($reactants)));
+	$atoms = array_values(array_unique(splitEquation($reactants, 3)));
+	$molecules = array_values(array_unique(splitEquation($reactants, 2)));
+	
+	if($atoms !== $molecules){
+		return false;
+	}
 	
 	//Check to ensure all are elements
 	foreach($atoms as $atom){
