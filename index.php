@@ -43,7 +43,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			}
 		}
 		if(!$found){
-			$title = 'Forever and Always a Fragment of Bad Design';
+			$title = 'Forever and Always a Fractal of Bad Design';
+			/** Fractal > Fragment. Srsly though use a graphic arrow instead of --> and change the bullet point formatting
+			 * (bigger font, no weird blue arrow). then it will look GUCCI BY RONE **/
+			  
 		}
 	}
 }
@@ -120,7 +123,7 @@ if(isset($found)){
 			</div></div>';
 			
 			//Change title
-			$_POST['title'] = 'Forever a Fragment of Bad Design';
+			$_POST['title'] = 'Forever a Fractal of Bad Design';
 		}
 	}else{ //Has a result
 		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
