@@ -123,19 +123,11 @@ if(isset($found)){
 			echo '</p>Please fix and re-submit.
 			</div></div>';
 			
-<<<<<<< Updated upstream
-			//Change title
-			$_POST['title'] = 'Forever a Fractal of Bad Design';
-=======
-			
-			
 			//Submit equation to cloud
-			//Make sure the equation is non-malicious
+			//Make sure the equation is non-malicious - NOTE: use prepared statements when you are feeling less lazy
 			$e = mysqli_real_escape_string($dbc, trim($_SESSION['failedEquation']));
 			$q = 'INSERT INTO failedEquations (equation, date) VALUES("' . $e . '", NOW())';
 			$r = mysqli_query($dbc, $q);
-			
->>>>>>> Stashed changes
 		}
 	}else{ //Has a result
 		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
