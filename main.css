@@ -24,6 +24,13 @@ a:hover {
  * Base structure
  */
 
+.inline{
+	color: #e7e6fa;
+}
+.inline:hover{
+	color:#e7e6fa;
+}
+
 .navbar{
 	float:right;
 	margin-top:-180px;

@@ -525,8 +525,9 @@ function isSoluble($molecule, $showWork = false){
 		
 		return true;
 	}
+	
 	//If nothing proved it soluble, assume it is insoluble.
-	return false;
+	return true;
 }
 
 //Balance non-strong acid base
@@ -801,7 +802,8 @@ function checkAcidBase($molecules){
 		'HCOOH' => array('H', 'COOH'),
 		'CH3COOH' => array('H', 'CH3COO'),
 		'CCl3COOH' => array('H', 'CCl3COO'),
-		'NH4' => array('H', 'NH3')
+		'NH4' => array('H', 'NH3'),
+		'H3PO4' => array('H', 'PO4', 'H', 'H')
 	);
 	
 	

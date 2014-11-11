@@ -10,12 +10,24 @@ function getPrecipitation($reactants){
 		return false;
 	}
 	
+	//Make sure the compound is ionic
+	$checkAtoms = array_values(array_unique(splitEquation($reactants)));
+	
+	if( abs(getTable($checkAtoms[0], 'electronegativity') - getTable($checkAtoms[1], 'electronegativity') ) < 2){
+		
+		return false;
+	}
+	
+	
 	foreach(splitEquation($reactants, 2) as $molecule){
+		
 		if(!isSoluble($molecule)){
 			isSoluble($molecule, true);
 			$_SESSION['work'][] = "$molecule is already a solid, silly.  Good luck trying to mix it.";
 			return false;
 		}
+		
+		
 	}
 	
 	//Split reactants into individual atoms
@@ -104,8 +116,10 @@ function getAcidBase($reactants){
 		if( (isset($acidBase[0])) && (isset($acidBase[1] )) ){
 			
 			$product = $acidBase[0][1] . " + " . $acidBase[1][0];
-			$_SESSION['work'][] = $acidBase[0][1] . " accepts the proton(s), " . $acidBase[1][0] . " is the donor.";
-			return "$reactants --> $product";
+			$_SESSION['work'][] = $acidBase[1][0] . " accepts the proton(s), " . $acidBase[0][1] . " is the donor.";
+			$_SESSION['work'][] = $acidBase[1][0] . " is the conjugate acid of the original base. " . $acidBase[0][1] . " is a conjugate base of the original acid.";		
+			$_SESSION['work'][] = 'Note: Some strong and weak acids do not completely disassociate. For example, H3PO4 in aqueous solution can dissolve into H2PO4 or HPO4, both of which are <a class = "inline" href = http://chemistry.about.com/od/chemistryglossary/g/Amphiprotic-Definition.htm target = "_blank">amphiprotic</a>, or PO4 (a weak base).';
+			return formatEquation($reactants) . ' --> ' . formatEquation($product);
 			
 		}
 		
@@ -143,6 +157,14 @@ function getSynthesis($reactants){
 	$molecules = array_values(array_unique(splitEquation($reactants, 2)));
 	
 	if($atoms !== $molecules){
+		
+		//Send equation to variable
+		$_SESSION['failedEquation'] = $reactants;
+		return false;
+		
+	}
+	
+	if(count(explode('+', $reactants)) < 2){
 		return false;
 	}
 	
@@ -168,6 +190,32 @@ function getSynthesis($reactants){
 	
 	return balanceSynthesis(splitEquation($reactants, 2), $product);
 	
+}
+
+function getCombustion($reactants){
+	$molecules = splitEquation($reactants, 2);
+	$hasHydrocarbon = false;
+	$hasOxygen = false;
+	foreach($molecules as $molecule){
+		if( (strpos($molecule, 'H') !== false) && (strpos($molecule, 'C') !== false)){
+			$hasHydrocarbon = true;
+			continue;
+		}
+		if(strpos($molecule, 'O2') !== false){
+			$hasOxygen = true;
+		}
+	}
+	
+	//Make sure there is a hydrocarbon and oxygen
+	if(!$hasHydrocarbon || !$hasOxygen){
+		return false;
+	}
+	
+	$_SESSION['work'][] = "It is a combustion reaction! The products of a combustion reaction are always water and carbon dioxide";
+	$_SESSION['work'][] = "Note: this reaction would never occur completely as written. Incomplete combustion will also take place, resulting in products such as CO (carbon monoxide) or C (charcoal)";
+	
+	$products = 'H2O + CO2';
+	return formatEquation($reactants) . ' --> ' . formatEquation($products);
 }
 
 ?>

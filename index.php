@@ -1,59 +1,3 @@
-
-<?php
-//Create options to be preset into the search box
-$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)');
-$num = rand(0, count($options) - 1);
-
-$title = 'An Algorithmic Chemical Equation Predictor';
-
-//Start the session and set up the variables
-session_start();
-$_SESSION['work'] = array(); //Variable to hold work to be shown
-$_SESSION['errors'] = array();  //Variable to hold errors throughout
-$_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
-
-//Require access to php pages with functions
-require('main_functions.php');
-require('included_functions.php');
-require('periodic_table.php');
-
-//Check for form submission
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-	
-	//Ensure that the user entered something
-	if(strlen($_POST['equation']) < 2){
-		
-		$_SESSION['errors'][] = 'Enter valid reactants, silly.'; 
-	}
-
-	//Remove any reaction arrows from equation and run it through the check precipitation function
-	$found = false;
-	if(empty($_SESSION['errors'])){
-		
-		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
-		$acidResult = getAcidBase(returnReactants($_POST['equation']));
-		$results = array($precipResult, $acidResult, $synthesisResult);
-		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
-		foreach($results as $result){
-			if($result){
-				$print = $result;
-				$found = true;
-				break;
-			}
-		}
-		if(!$found){
-			$title = 'Forever and Always a Fractal of Bad Design';
-			/** Fractal > Fragment. Srsly though use a graphic arrow instead of --> and change the bullet point formatting
-			 * (bigger font, no weird blue arrow). then it will look GUCCI BY RONE **/
-			  
-		}
-	}
-}
-
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,6 +30,63 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
      	 
           <div class="inner cover">
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
+<?php
+//Create options to be preset into the search box
+$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)', 'Enter Equation (e.g. HCl + KOH)');
+$num = rand(0, count($options) - 1);
+
+$title = 'An Algorithmic Chemical Equation Predictor';
+
+//Start the session and set up the variables
+session_start();
+$_SESSION['work'] = array(); //Variable to hold work to be shown
+$_SESSION['errors'] = array();  //Variable to hold errors throughout
+$_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
+$_SESSION['failedEquation'] = ''; //Variable to hold failed equation to submit for later review
+
+
+//Require access to php pages with functions
+require('main_functions.php');
+require('included_functions.php');
+require('periodic_table.php');
+//require('mysqli_connect.php');
+
+//Check for form submission
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+	
+	//Ensure that the user entered something
+	if(strlen($_POST['equation']) < 2){
+		
+		$_SESSION['errors'][] = 'Enter valid reactants, silly.'; 
+	}
+
+	//Remove any reaction arrows from equation and run it through the check precipitation function
+	$found = false;
+	if(empty($_SESSION['errors'])){
+		
+		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
+		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
+		$acidResult = getAcidBase(returnReactants($_POST['equation']));
+		$combustionResult = getCombustion(returnReactants($_POST['equation']));
+		$results = array($precipResult, $acidResult, $synthesisResult, $combustionResult);
+		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
+		foreach($results as $result){
+			if($result){
+				$print = $result;
+				$found = true;
+				break;
+			}
+		}
+		if(!$found){
+			$title = 'Forever and Always a Fractal of Bad Design';
+			/** Fractal > Fragment. Srsly though use a graphic arrow instead of --> and change the bullet point formatting
+			 * (bigger font, no weird blue arrow). then it will look GUCCI BY RONE **/
+			  
+		}
+	}
+}
+
+?>
 	    <p class="lead text-center"><?php echo $title ?></p>
             <p class="lead">
 		<form action = 'index.php' method = 'post' autocomplete="off" id = 'form'>
@@ -122,8 +123,19 @@ if(isset($found)){
 			echo '</p>Please fix and re-submit.
 			</div></div>';
 			
+<<<<<<< Updated upstream
 			//Change title
 			$_POST['title'] = 'Forever a Fractal of Bad Design';
+=======
+			
+			
+			//Submit equation to cloud
+			//Make sure the equation is non-malicious
+			$e = mysqli_real_escape_string($dbc, trim($_SESSION['failedEquation']));
+			$q = 'INSERT INTO failedEquations (equation, date) VALUES("' . $e . '", NOW())';
+			$r = mysqli_query($dbc, $q);
+			
+>>>>>>> Stashed changes
 		}
 	}else{ //Has a result
 		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
