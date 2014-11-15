@@ -13,8 +13,7 @@ function getPrecipitation($reactants){
 	//Make sure the compound is ionic
 	$checkAtoms = array_values(array_unique(splitEquation($reactants)));
 	
-	if( abs(getTable($checkAtoms[0], 'electronegativity') - getTable($checkAtoms[1], 'electronegativity') ) < 2){
-		
+	if( abs(getTable($checkAtoms[0], 'electronegativity') - getTable($checkAtoms[1], 'electronegativity') ) < 1){
 		return false;
 	}
 	
@@ -76,7 +75,7 @@ function getPrecipitation($reactants){
 	}else{
 		
 		if(count($precipitates) > 1){
-			return "Multiple Precipitation Reactions Possible.";
+			return false;
 		}
 	}
 	
@@ -178,17 +177,22 @@ function getSynthesis($reactants){
 		}
 	}
 	
+	$splitAtoms = array_values(array_unique(splitEquation($reactants)));
+	
 	//Ensure correct cation/anion order
-	if(getTable($atoms[0], 'electronegativity') > getTable($atoms[1], 'electronegativity')){
+	if(getTable($splitAtoms[0], 'electronegativity') > getTable($splitAtoms[1], 'electronegativity')){
+		echo getTable($atoms[0], 'electronegativity');
+		
 		$atoms = array_reverse($atoms);
+		
 	}
 	
-	$_SESSION['work'][] = "Basic synthesis reaction.";
+	$_SESSION['work'][] = "Basic synthesis reaction. All of the reactants are in their elemental state, so the equation takes the form A + B --> C";
 	
 	//Find the product
 	$product = matchCharges($atoms[0], $atoms[1]);
 	
-	return balanceSynthesis(splitEquation($reactants, 2), $product);
+	return balanceEquation(splitEquation($reactants, 2), $product);
 	
 }
 
@@ -215,7 +219,7 @@ function getCombustion($reactants){
 	$_SESSION['work'][] = "Note: this reaction would never occur completely as written. Incomplete combustion will also take place, resulting in products such as CO (carbon monoxide) or C (charcoal)";
 	
 	$products = 'H2O + CO2';
-	return formatEquation($reactants) . ' --> ' . formatEquation($products);
+	return balanceEquation($reactants, $products);
 }
 
 ?>

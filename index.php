@@ -21,11 +21,12 @@
     <div class="site-wrapper">
 	
       <div class="site-wrapper-inner">
-     	   <div class = "navbar">
+     	   <!--<div class = "navbar">
      		   <a href = "#" class = "link">Contact</a>
      		   <a href = "#" class = "link">About</a>
      		   <a href = "#">Examples</a>
      	   </div>
+		   -->
         <div class="cover-container">
      	 
           <div class="inner cover">
@@ -44,11 +45,12 @@ $_SESSION['errors'] = array();  //Variable to hold errors throughout
 $_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
 $_SESSION['failedEquation'] = ''; //Variable to hold failed equation to submit for later review
 
-
 //Require access to php pages with functions
 require('main_functions.php');
 require('included_functions.php');
 require('periodic_table.php');
+require('matrix_functions.php');
+
 //require('mysqli_connect.php');
 
 //Check for form submission
@@ -71,7 +73,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 		$results = array($precipResult, $acidResult, $synthesisResult, $combustionResult);
 		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
 		foreach($results as $result){
-			if($result){
+			if($result !== false){
 				$print = $result;
 				$found = true;
 				break;
@@ -124,7 +126,7 @@ if(isset($found)){
 			</div></div>';
 			
 			//Submit equation to cloud
-			//Make sure the equation is non-malicious - NOTE: use prepared statements when you are feeling less lazy
+			//Make sure the equation is non-malicious - NOTE: use prepared statements when you are feeling less lazy∑
 			$e = mysqli_real_escape_string($dbc, trim($_SESSION['failedEquation']));
 			$q = 'INSERT INTO failedEquations (equation, date) VALUES("' . $e . '", NOW())';
 			$r = mysqli_query($dbc, $q);

@@ -20,6 +20,26 @@ function returnReactants($input){
 	return $input;
 }
 
+//Takes the input of a reaction that may or may not have a reaction arrow or other symbol
+//Returns only the product equation
+function returnProducts($input){
+	
+	//Check if equation has reaction sign
+	$possibleSigns = array('-->', '->', '>', '=', 'goes to', 'to', 'yields');
+	
+	//Loop through posible signs to check if one is present
+	foreach($possibleSigns as $sign){
+		if(strpos($input, $sign) !== false){
+			
+			//Return the input without the sign, and no spaces
+			return trim(substr($input, strpos($input, $sign)));
+		}
+	};
+	
+	//If no sign, return the reactants
+	return $input;
+}
+
 //Converts and words to their corresponding atoms
 function convertWords($equation){
 	
@@ -203,8 +223,8 @@ Takes input of equation and a level and returns and array. Splits equation to a 
 
 */
 
-function splitEquation($equation, $level = 4, $ignoreSolublity = true){
-
+function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePolyatomics = false){
+	
 	//Strip all whitespace
 	$equation = preg_replace('/\s+/', '', $equation);
 	
@@ -248,7 +268,7 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 	if($level == 2){
 		return array_filter($adjustedMolecules);
 	} 
-	
+
 	//Array to hold atoms before there numbers (i.e. Cl2) are taken into account
 	$rawAtoms = array();
 	
@@ -261,6 +281,10 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 		//Push the individual atoms to the end of the array
 		foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
 			
+			//If ignore polatomics is turned on end the loop
+			if($ignorePolyatomics !== false){
+				break;
+			}
 			//If no polyatomic ion is found in the molecule, check for one without parenthesis
 			if(strpos($molecule, $poly) === false){
 				
@@ -315,6 +339,9 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true){
 			}
 		}
 		
+		/**
+		THIS NEEDS TO BE CHANGED. ONLY WORKS FOR MOLECULES WITH TWO ATOMS. NEEDS TO WORK FOR MOLECULES WITH MORE THAN TWO ATOMS. THIS PREVENTS CORRECT BALANCING FROM OCCURING IF A MOLECULE HAS MORE THAN TWO ATOMS. EXAMPLE: KI + KClO3 + HCl --> I2 + H2O + KCl
+		*/
 		//Substrings past the first character, then searches for the next upercase letter to find the next atom.
 		array_push($rawAtoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1));
 		
@@ -534,6 +561,7 @@ function isSoluble($molecule, $showWork = false){
 //Balances equations of the form Aa + Bb --
 
 //Balances equations in the form of Aa + Bb --> AcBd
+/* DEPRECATED
 function balanceSynthesis($reactants, $product){
 
 	//Align correctly
@@ -602,8 +630,9 @@ function balanceSynthesis($reactants, $product){
 	}else{
 		return formatEquation("$nums[0]$reactants[0] + $nums[1]$reactants[1]") .  " --> " . formatEquation("$nums[2]$product") . '</br></br>' . $additional;
 	}
-}
+}*/
 
+/* DEPRECATED 
 //Takes input reactants and products, both strings. Outputs a complete string that is the balanced equation, using --> as a yields symbol
 function balanceEquation($reactants, $products){
 	
@@ -646,7 +675,7 @@ function balanceEquation($reactants, $products){
 	$e = (is_numeric(substr(trim($products[0]), -1, 1)) ? $e = substr(trim($products[0]), -1, 1) : $e = 1);
 	$f = (is_numeric(substr(trim($products[1]), -1, 1)) ? $f = substr(trim($products[1]), -1, 1) : $f = 1);
 	$g = (is_numeric(substr(trim($products[2]), -1, 1)) ? $g = substr(trim($products[2]), -1, 1) : $g = 1);
-	$h = (is_numeric(substr(trim($products[3]), -1, 1)) ? $h = substr(trim($products[3]), -1, 1) : $h = 1);*/
+	$h = (is_numeric(substr(trim($products[3]), -1, 1)) ? $h = substr(trim($products[3]), -1, 1) : $h = 1);
 	
 	$w = 12;
 	$y = ($w * $a)/$e;
@@ -677,6 +706,7 @@ function balanceEquation($reactants, $products){
 	return formatEquation("$nums[0]$reactants[0]$reactants[1] + $nums[1]$reactants[2]$reactants[3]") .  " --> " . formatEquation("$nums[2]$products[0]$products[1] + $nums[3]$products[2]$products[3]");
 	
 }
+*/
 
 //Returns formatted equation
 function formatEquation($equation){
@@ -760,6 +790,21 @@ function formatEquation($equation){
 	}
 	
 	return $formatted;
+}
+
+function float2rat($n, $tolerance = 1.e-6) {
+    $h1=1; $h2=0;
+    $k1=0; $k2=1;
+    $b = 1/$n;
+    do {
+        $b = 1/$b;
+        $a = floor($b);
+        $aux = $h1; $h1 = $a*$h1+$h2; $h2 = $aux;
+        $aux = $k1; $k1 = $a*$k1+$k2; $k2 = $aux;
+        $b = $b-$a;
+    } while (abs($n-$h1/$k1) > $n*$tolerance);
+
+    return "$h1/$k1";
 }
 
 //Returns an array with the first slot being the base, second slot acid (with number of hydrogens it donates), and anything else in the other slots
@@ -897,4 +942,5 @@ function lcmNums($ar) {
 		return $ar[0];
 	}
 }
+
 ?>

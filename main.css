@@ -19,7 +19,10 @@ a:hover {
   border: 1px solid #fff;
 }
 
-
+.table{
+	 border: 1px solid white;
+	 
+}
 /*
  * Base structure
  */
