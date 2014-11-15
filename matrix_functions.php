@@ -230,21 +230,25 @@ function balanceEquation($left, $right){
 	foreach($inverseMatrix as $row){
 		$rawCoefficients[] = array_pop($row);
 	}
-	
+
+	$denominator = 1;
 	foreach($rawCoefficients as $coeff){
 		
-		//If it is a decimal, put it into fraction form
-		if(!is_int($coeff)){
+		$coeff = abs($coeff);
+		if( (int)$coeff == $coeff){
+			continue;
+		}
 		
+		//If it is a decimal, put it into fraction form
+		if(is_float($coeff)){
+			
 			$fraction = float2rat(abs($coeff));
 			$A = array_values(array_filter(explode('/', $fraction)));
 			$denominator = $A[1];
 			break;
-		}else{
-			$denominator = 1;
 		}
 	}
-	
+	//echo $denominator;
 	$coefficients = array();
 	foreach($rawCoefficients as $coeff){
 		$coefficients[] = abs($coeff) * $denominator;
@@ -270,7 +274,7 @@ function balanceEquation($left, $right){
 	$reactantString = implode(' + ', $left);
 	$productString = implode(' + ', $right);
 	
-	return $reactantString . ' --> ' . $productString;
+	return formatEquation($reactantString) . ' --> ' . formatEquation($productString);
 	
 }
 
