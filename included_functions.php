@@ -32,7 +32,7 @@ function returnProducts($input){
 		if(strpos($input, $sign) !== false){
 			
 			//Return the input without the sign, and no spaces
-			return trim(substr($input, strpos($input, $sign)));
+			return trim(substr($input, strpos($input, $sign) + strlen($sign)));
 		}
 	};
 	
@@ -247,10 +247,13 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePo
 		
 		//Ensure the entire antecedent is captured, no matter how many digits it is.
 		$index = 0;
-		while(is_numeric($molecule{$index})){
-			$coefficient = substr($molecule, 0, $index+1);
-			$index++;
+		if(isset($molecule{$index})){
+			while(is_numeric($molecule{$index})){
+				$coefficient = substr($molecule, 0, $index+1);
+				$index++;
+			}
 		}
+		
 		
 		if(is_numeric($coefficient)){	
 			
@@ -792,7 +795,7 @@ function formatEquation($equation){
 	return $formatted;
 }
 
-function float2rat($n, $tolerance = 1.e-6) {
+function float2rat($n, $tolerance = 1.e-5) {
     $h1=1; $h2=0;
     $k1=0; $k2=1;
     $b = 1/$n;
@@ -937,7 +940,7 @@ function lcm($a, $b) {
 function lcmNums($ar) {
 	if (count($ar) > 1) {
 		$ar[] = lcm( array_shift($ar) , array_shift($ar) );
-		return lcm_nums( $ar );
+		return lcmNums( $ar );
 	} else {
 		return $ar[0];
 	}

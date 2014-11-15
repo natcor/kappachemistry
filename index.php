@@ -66,19 +66,29 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	$found = false;
 	if(empty($_SESSION['errors'])){
 		
-		$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-		$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
-		$acidResult = getAcidBase(returnReactants($_POST['equation']));
-		$combustionResult = getCombustion(returnReactants($_POST['equation']));
-		$results = array($precipResult, $acidResult, $synthesisResult, $combustionResult);
-		$print = formatEquation($_POST['equation']) . ' --> No Reaction';
-		foreach($results as $result){
-			if($result !== false){
-				$print = $result;
-				$found = true;
-				break;
+		$reactants = returnReactants($_POST['equation']);
+		$products = returnProducts($_POST['equation']);
+		
+		if( ($reactants !== $products) && (strlen($products !== 0)) && (strlen($reactants) !== 0)){
+			$print = balanceEquation($reactants, $products);
+			$found = true;
+		}else{
+			$precipResult = getPrecipitation(returnReactants($_POST['equation']));
+			$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
+			$acidResult = getAcidBase(returnReactants($_POST['equation']));
+			$combustionResult = getCombustion(returnReactants($_POST['equation']));
+			$results = array($precipResult, $acidResult, $synthesisResult, $combustionResult);
+			$print = formatEquation($_POST['equation']) . ' --> No Reaction';
+			foreach($results as $result){
+				if($result !== false){
+					$print = $result;
+					$found = true;
+					break;
+				}
 			}
 		}
+		
+		
 		if(!$found){
 			$title = 'Forever and Always a Fractal of Bad Design';
 			/** Fractal > Fragment. Srsly though use a graphic arrow instead of --> and change the bullet point formatting

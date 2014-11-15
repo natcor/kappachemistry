@@ -29,8 +29,10 @@ function balanceEquation($left, $right){
 	/** NOTE: Maybe can condense this code with iterator? If you see a way please do. Trying to avoid fractals of bad design. **/
 	foreach($left as $molecule){
 		
+		$rawAtoms = preg_split('/(?=[A-Z])/', $molecule);
+		
 		//Split molecule at every capital letter
-		$rawAtoms = splitEquation($molecule);
+		//$rawAtoms = splitEquation($molecule);
 		
 		$atoms = array();
 		
@@ -54,9 +56,11 @@ function balanceEquation($left, $right){
 	}
 	
 	foreach($right as $molecule){
-	
+		
+		$rawAtoms = preg_split('/(?=[A-Z])/', $molecule);
+		
 		//Split molecule at every capital letter
-		$rawAtoms = splitEquation($molecule);
+		//$rawAtoms = splitEquation($molecule);
 		
 		$atoms = array();
 		
@@ -101,45 +105,12 @@ function balanceEquation($left, $right){
 		$compMatrix[] = $toPush;
 	}
 	
-	//Print out the new table
-	$output =  "<p>Original Composition Matrix:</p><table class = 'table'><tr><td></td>\n";
-	foreach($full as $molecule){
-		$output .= "\n<td>$molecule</td>";
-	}
-	$output .= "\n</tr>";
-	$num = 0;
-	foreach($compMatrix as $row) {
-		$output .=("<tr>");
-		$output .= "<td>$elements[$num]</td>";
-		$num++;
-		foreach($row as $cell) {
-			$output .=('<td>' . $cell . '</td>');
-		}
-		$output .=('</tr>');
-  	}
-	$output .= '</table>';
-	$_SESSION['work'][] = $output;
+	printMatrix($compMatrix, 'Composition Matrix', $full, $elements);
 	
 	//Create matrix in Reduced Row Echelon Form
 	$reducedMatrix = rref($compMatrix);
 
-	//Print out the new table
-	$output =  "<p>Reduced Row Echelon Form:</p><table class = 'table'><tr><td></td>\n";
-	foreach($full as $molecule){
-		$output .= "\n<td>$molecule</td>";
-	}
-	$output .= "\n</tr>";
-	$num = 0;
-	foreach($reducedMatrix as $row) {
-		$output .= "<tr><td>$elements[$num]</td>";
-		$num++;
-		foreach($row as $cell) {
-			$output .=('<td>' . $cell . '</td>');
-		}
-		$output .=('</tr>');
-  	}
-	$output .= '</table>';
-	$_SESSION['work'][] = $output;
+	printMatrix($reducedMatrix, 'Reduced Row Echelon Form', $full, $elements);
 	
 	//Create square matrix with diagonal of ones
 	$rows = count($reducedMatrix);
@@ -244,16 +215,14 @@ function balanceEquation($left, $right){
 			
 			$fraction = float2rat(abs($coeff));
 			$A = array_values(array_filter(explode('/', $fraction)));
-			$denominator = $A[1];
-			break;
+			$denominator = lcm($denominator, $A[1]);
 		}
 	}
-	//echo $denominator;
+	
 	$coefficients = array();
 	foreach($rawCoefficients as $coeff){
 		$coefficients[] = abs($coeff) * $denominator;
 	}
-	
 	
 	//Append coefficients to original equation
 	for($i = 0; $i < count($left); $i++){
@@ -278,15 +247,46 @@ function balanceEquation($left, $right){
 	
 }
 
-function printMatrix($matrix, $title){
+function printMatrix($matrix, $title, $x = null, $y = null){
+	
 	$output =  "<p>$title</p><table class = 'table'><tr>\n";
+	if( ($x) && ($y) ){
+		$output .=  "<tr><td></td>\n";
+		foreach($x as $molecule){
+			$output .= "\n<td>$molecule</td>";
+		}
+		$output .= "\n</tr>";
+		
+	}
+	
+	
+	$num = 0;
 	
 	foreach($matrix as $row) {
-	
+		
+		$output .= '<tr>';
+		
+		if($x && $y){
+			$output .= "<td>$y[$num]</td>";
+			$num++;
+		}
+		
+		
 		foreach($row as $cell) {
+			
+			if( ($cell > 0) && (!is_int($cell)) ){
+				$cell = float2rat($cell);
+				if($cell == "1/1"){
+					$cell = 1;
+				}
+			}
+			if( ($cell < 0) && (!is_int($cell)) ){
+				$cell = "-" . float2rat(abs($cell));
+			}
+			
 			$output .=('<td>' . $cell . '</td>');
 		}
-		$output .=('</tr>');
+		$output .= '</tr>';
   	}
 	$output .= '</table>';
 	$_SESSION['work'][] = $output;
