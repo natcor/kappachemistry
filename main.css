@@ -60,6 +60,14 @@ a:hover {
 .work{
 	padding-bottom:70px;
 }
+#showWork{
+	cursor:pointer;
+	color: #e7e6fa;
+}
+#hiddenWork{
+	text-indent: 40px;
+	color: #e7e6fa;
+}
 #results{
 	margin-top:80px;
 	padding-top:20px;

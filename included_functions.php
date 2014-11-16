@@ -343,10 +343,15 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePo
 		}
 		
 		/**
-		THIS NEEDS TO BE CHANGED. ONLY WORKS FOR MOLECULES WITH TWO ATOMS. NEEDS TO WORK FOR MOLECULES WITH MORE THAN TWO ATOMS. THIS PREVENTS CORRECT BALANCING FROM OCCURING IF A MOLECULE HAS MORE THAN TWO ATOMS. EXAMPLE: KI + KClO3 + HCl --> I2 + H2O + KCl
+		NEED TO MAKE IT ACCOMODATE FOR THINGS LIKE C10H6
 		*/
-		//Substrings past the first character, then searches for the next upercase letter to find the next atom.
+
+		$tempAtoms = preg_split('/(?=[A-Z])/', $molecule);
+		$rawAtoms = array_merge($rawAtoms, $tempAtoms);
+		
+		/* @DEPRECATED
 		array_push($rawAtoms, substr($molecule, 0,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1), substr($molecule,  strcspn(substr($molecule, 1), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + 1));
+		*/
 		
 		//Push the polyatomic afterward
 		if($toPush != ''){
@@ -393,15 +398,33 @@ function matchCharges($cation, $anion, $usePetersBetterVersion = false){
 	$cation = splitEquation($cation)[0];
 	$anion = splitEquation($anion)[0];
 	
+	//Get the common charge of the anion. There are no anions that have multiple charges.
+	$aCharge = getTable($anion, 'charge');
+	
 	//Get the common charges of the cation. If it is an element with multiple charges, find the correct charge from the global session variable
 	if(is_numeric(getTable($cation, 'charge')) ){
 		$cCharge = getTable($cation, 'charge');
 	}else{
-		$cCharge = $_SESSION['transitions'][$cation];
+		if(isset($_SESSION['transitions'][$cation])){
+			$cCharge = $_SESSION['transitions'][$cation];
+		}else{
+			$charges = getTable($cation, 'charge');
+			
+			$set = false;
+			//Find best charge
+			foreach($charges as $charge){
+				if( ($charge / $aCharge == 0) || ($aCharge / $charge == 0) ){
+					$cCharge = $charge;
+					$set = true;
+				}
+			}
+			
+			if(!$set){
+				$cCharge = $charges[0];
+			}
+		}
+		
 	}
-	
-	//Get the common charge of the anion. There are no anions that have multiple charges.
-	$aCharge = getTable($anion, 'charge');
 	
 	//Find the least common multiple of the two charges, then divide that by the charge to get the multipliers of the atoms
 	$cMult = abs(lcm($cCharge, $aCharge) / $cCharge);
@@ -635,7 +658,7 @@ function balanceSynthesis($reactants, $product){
 	}
 }*/
 
-/* DEPRECATED 
+/** @DEPRECATED 
 //Takes input reactants and products, both strings. Outputs a complete string that is the balanced equation, using --> as a yields symbol
 function balanceEquation($reactants, $products){
 	

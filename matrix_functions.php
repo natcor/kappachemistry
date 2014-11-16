@@ -6,6 +6,8 @@
 //Takes the input of an array or a string for the left and right side of the equation
 function balanceEquation($left, $right){
 	
+	$explanation = '';
+		
 	//If input values are not arrays, make them into array
 	if(!is_array($left)){
 		$left = splitEquation($left, 2);
@@ -29,10 +31,8 @@ function balanceEquation($left, $right){
 	/** NOTE: Maybe can condense this code with iterator? If you see a way please do. Trying to avoid fractals of bad design. **/
 	foreach($left as $molecule){
 		
-		$rawAtoms = preg_split('/(?=[A-Z])/', $molecule);
-		
 		//Split molecule at every capital letter
-		//$rawAtoms = splitEquation($molecule);
+		$rawAtoms = splitEquation($molecule);
 		
 		$atoms = array();
 		
@@ -57,10 +57,8 @@ function balanceEquation($left, $right){
 	
 	foreach($right as $molecule){
 		
-		$rawAtoms = preg_split('/(?=[A-Z])/', $molecule);
-		
 		//Split molecule at every capital letter
-		//$rawAtoms = splitEquation($molecule);
+		$rawAtoms = splitEquation($molecule);
 		
 		$atoms = array();
 		
@@ -105,12 +103,12 @@ function balanceEquation($left, $right){
 		$compMatrix[] = $toPush;
 	}
 	
-	printMatrix($compMatrix, 'Composition Matrix', $full, $elements);
+	$explanation .= printMatrix($compMatrix, 'Composition Matrix', $full, $elements);
 	
 	//Create matrix in Reduced Row Echelon Form
 	$reducedMatrix = rref($compMatrix);
 
-	printMatrix($reducedMatrix, 'Reduced Row Echelon Form', $full, $elements);
+	$explanation .= printMatrix($reducedMatrix, 'Reduced Row Echelon Form', $full, $elements);
 	
 	//Create square matrix with diagonal of ones
 	$rows = count($reducedMatrix);
@@ -140,7 +138,7 @@ function balanceEquation($left, $right){
 	
 	
 	//Print out the new table
-	printMatrix($reducedMatrix, 'Augmented Matrix');
+	$explanation .= printMatrix($reducedMatrix, 'Augmented Matrix');
 	
 	$identityMatrix = identity_matrix($columns);
 	
@@ -150,7 +148,7 @@ function balanceEquation($left, $right){
 	}
 	
 	//Print out the new table
-	printMatrix($identityMatrix, 'Identity Matrix');
+	$explanation .= printMatrix($identityMatrix, 'Identity Matrix');
 	
 	//Add identity matrix to first matrix
 	$mergedMatrix = array();
@@ -171,7 +169,7 @@ function balanceEquation($left, $right){
 	}
 	
 	//Print out the new table
-	printMatrix($mergedMatrix, 'Merged Matrix');
+	$explanation .= printMatrix($mergedMatrix, 'Merged Matrix');
 	
 	//Reduce the merged matrix
 	$inverseMatrix = array();
@@ -195,7 +193,7 @@ function balanceEquation($left, $right){
 	}
 	
 	//Print out the new table
-	printMatrix($inverseMatrix, 'Inverse Matrix (the right half)');
+	$explanation .= printMatrix($inverseMatrix, 'Inverse Matrix (the right half)');
 	
 	$rawCoefficients = array();
 	foreach($inverseMatrix as $row){
@@ -240,6 +238,18 @@ function balanceEquation($left, $right){
 		$j++;
 	}
 	
+	//Check if the equation required balancing
+	$balanced = false;
+	foreach($coefficients as $coefficient){
+		if($coefficient > 1){
+			$balanced = true;
+		}
+	}
+	
+	if($balanced){
+		$explanation = '<p>Equation required balancing. <a id = "showWork">(Work)</a></p><div id = "hiddenWork" hidden>' . $explanation . '</div>';
+		$_SESSION['work'][] = $explanation;
+	}
 	$reactantString = implode(' + ', $left);
 	$productString = implode(' + ', $right);
 	
@@ -289,7 +299,8 @@ function printMatrix($matrix, $title, $x = null, $y = null){
 		$output .= '</tr>';
   	}
 	$output .= '</table>';
-	$_SESSION['work'][] = $output;
+	
+	return $output;
 }
 
 //Put matrix into reverse row echelon form
