@@ -890,7 +890,7 @@ function checkAcidBase($molecules){
 	//If the reaction has a strong base AND strong acid return them
 	$acid = array_values(array_intersect(array_keys($strongAcids), $molecules));
 	$base = array_values(array_intersect(array_keys($strongBases), $molecules));
-
+	
 	if( (count($acid) > 0) && (count($base) > 0)){
 		return array($strongAcids[$acid[0]], $strongBases[$base[0]], true);
 	}
@@ -899,14 +899,15 @@ function checkAcidBase($molecules){
 	$acid = array_values(array_intersect(array_keys($weakAcids), $molecules));
 	$base = array_values(array_intersect(array_keys($weakBases), $molecules));
 	if( (count($acid) > 0) && (count($base) > 0)){
-		return array($weakAcids[$acid[0]], $weakBases[$base[0]], false);
+		return array_values(array_filter(array($weakAcids[$acid[0]], $weakBases[$base[0]], false)));
 	}
 	
 	//Strong acid weak base
 	$acid = array_values(array_intersect(array_keys($strongAcids), $molecules));
 	$base = array_values(array_intersect(array_keys($weakBases), $molecules));
+
 	if( (count($acid) > 0) && (count($base) > 0)){
-		return array($strongAcids[$acid[0]], $weakBases[$base[0]], false);
+		return array_values(array_filter(array($strongAcids[$acid[0]], $weakBases[$base[0]], false)));
 	}
 	
 	//Weak acid strong base

@@ -34,7 +34,8 @@
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
 <?php
 //Create options to be preset into the search box
-$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)', 'Enter Equation (e.g. HCl + KOH)');
+$options = array('Enter Equation (e.g. AgNO3 + BaCl2)', 'Enter Equation (e.g. KCl + AgNO3)', 'Enter Equation (e.g. K2SO4 + AgNO3)', 'Enter Equation (e.g. Na3PO4  + Pb(NO3)2 )', 'Enter Equation (e.g. NaOH + H2SO4)', 'Enter Equation (e.g. H2 + O2)', 'Enter Equation (e.g. C + O2)', 'Enter Equation (e.g. Mg + O2)', 'Enter Equation (e.g. HCl + KOH)', 'Enter Equation (e.g. HIO3 + FeI2 + HCl --> FeCl3 + ICl + H2O)');
+
 $num = rand(0, count($options) - 1);
 
 $title = 'An Algorithmic Chemical Equation Predictor';

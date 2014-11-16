@@ -144,7 +144,10 @@ function balanceEquation($left, $right){
 	
 	//Make sure the inverse can be taken
 	if($identityMatrix == $reducedMatrix){
-		return false;
+		$reactantString = implode(' + ', $left);
+		$productString = implode(' + ', $right);
+	
+		return formatEquation($reactantString) . ' --> ' . formatEquation($productString);
 	}
 	
 	//Print out the new table
@@ -247,13 +250,13 @@ function balanceEquation($left, $right){
 	}
 	
 	if($balanced){
-		$explanation = '<p>Equation required balancing. <a id = "showWork">(Work)</a></p><div id = "hiddenWork" hidden>' . $explanation . '</div>';
+		$explanation = '<p>Equation required balancing. Used linear algebra method as explained <a class = "inline" href = "https://www.youtube.com/watch?v=AuVjcYZKM00" target = "_blank">here</a>. However, this is probably not the most practical method unless the equation is exceedingly complex. <a id = "showWork">(Work)</a></p><div id = "hiddenWork" hidden>' . $explanation . '</div>';
 		$_SESSION['work'][] = $explanation;
 	}
 	$reactantString = implode(' + ', $left);
 	$productString = implode(' + ', $right);
 	
-	return formatEquation($reactantString) . ' --> ' . formatEquation($productString);
+	return formatEquation($reactantString) . ' <img src = "reaction_arrow.png" id = "reactionArrow"/> ' . formatEquation($productString);
 	
 }
 

@@ -100,10 +100,11 @@ function getAcidBase($reactants){
 	
 	//Array to hold products
 	$products = array();
-
+	
 	//Test for water formation and add water if necessary
 	if( (in_array('(OH)', $ions)) && (in_array('H', $ions)) ){
 		$products[] = 'HOH';
+		$_SESSION['work'][] = "The reaction is an acid base reaction, and will form water.";
 		foreach($ions as &$ion){
 			if(($ion == 'H') || ($ion == '(OH)')){
 				$ion = '';
@@ -111,14 +112,16 @@ function getAcidBase($reactants){
 		}
 		$ions = array_values(array_filter($ions));
 	}else{
-		//If not hydrogen and hydroxide check for week base /acids
+		//If not hydrogen and hydroxide check for week base/acids
 		if( (isset($acidBase[0])) && (isset($acidBase[1] )) ){
-			
+
 			$product = $acidBase[0][1] . " + " . $acidBase[1][0];
+			
 			$_SESSION['work'][] = $acidBase[1][0] . " accepts the proton(s), " . $acidBase[0][1] . " is the donor.";
 			$_SESSION['work'][] = $acidBase[1][0] . " is the conjugate acid of the original base. " . $acidBase[0][1] . " is a conjugate base of the original acid.";		
 			$_SESSION['work'][] = 'Note: Some strong and weak acids do not completely disassociate. For example, H3PO4 in aqueous solution can dissolve into H2PO4 or HPO4, both of which are <a class = "inline" href = http://chemistry.about.com/od/chemistryglossary/g/Amphiprotic-Definition.htm target = "_blank">amphiprotic</a>, or PO4 (a weak base).';
-			return formatEquation($reactants) . ' --> ' . formatEquation($product);
+		
+			return balanceEquation($reactants, $product);
 			
 		}
 		
@@ -137,13 +140,6 @@ function getAcidBase($reactants){
 		return false;
 	}
 	
-	//Check if it is a strong reaction or not
-	if($acidBase[2]){
-		$_SESSION['work'][] = "Water will be formed since it is a neutralization reaction of a strong acid and strong base.";
-		$symbol = ' --> ';
-	}else{
-		$symbol = ' <--> ';
-	}
 	$products = implode(' + ',$products);
 	
 	return balanceEquation($reactants, $products);
@@ -181,7 +177,6 @@ function getSynthesis($reactants){
 	
 	//Ensure correct cation/anion order
 	if(getTable($splitAtoms[0], 'electronegativity') > getTable($splitAtoms[1], 'electronegativity')){
-		echo getTable($atoms[0], 'electronegativity');
 		
 		$atoms = array_reverse($atoms);
 		

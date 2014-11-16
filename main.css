@@ -52,10 +52,15 @@ a:hover {
 	border-radius:30px;
 	padding:10px;
 	height:130px;
+}	
+#reactionArrow{
+	width:30px; /* you can use % */
+	height:auto;
 }
 .work li{
 	padding:5px;
 	list-style-image: url('arrow.png');
+	float:left;
 }
 .work{
 	padding-bottom:70px;
@@ -65,7 +70,6 @@ a:hover {
 	color: #e7e6fa;
 }
 #hiddenWork{
-	text-indent: 40px;
 	color: #e7e6fa;
 }
 #results{
