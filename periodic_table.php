@@ -12,7 +12,7 @@ function getTable($element, $property, $array = null){
 			"H" => array(
 				"atomic_number" => 1,
 				"molar_mass" => 1.008, 
-				"electronegativity" => 2.1,
+				"electronegativity" => 2.2,
 				"charge" => 1,
 				"reactivity" => 16
 			),

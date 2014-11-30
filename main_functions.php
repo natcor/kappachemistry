@@ -1,5 +1,30 @@
 <?php
 
+function processEquation($equation){
+	
+	
+	$keyWords = array('OXIDATION', 'NUMBERS', 'STATES');
+	//Check for keywords
+	$upper = strtoupper($equation);
+	foreach($keyWords as $word){
+		if(strpos($upper, $word) !== false){
+			$_SESSION['additional'][] = $word;
+			$equation = str_ireplace('oxidation', '', $equation);
+		}
+	}
+
+	//Break the equation into reactants and products
+	$reactants = returnReactants($equation);
+	$products = returnProducts($equation);
+	
+	//Split into appropriate arrays
+	$splitReactants = arrayForm($reactants);
+	$splitProducts = arrayForm($products);
+	
+	return array($splitReactants, $splitProducts);
+}
+
+
 function getPrecipitation($reactants){
 	
 	//Convert words
@@ -14,16 +39,18 @@ function getPrecipitation($reactants){
 	$checkAtoms = array_values(array_unique(splitEquation($reactants)));
 	
 	if( abs(getTable($checkAtoms[0], 'electronegativity') - getTable($checkAtoms[1], 'electronegativity') ) < 1){
+		
 		return false;
 	}
 	
 	
 	foreach(splitEquation($reactants, 2) as $molecule){
 		
+		isSoluble($molecule, true);
 		if(!isSoluble($molecule)){
-			isSoluble($molecule, true);
 			$_SESSION['work'][] = "$molecule is already a solid, silly.  Good luck trying to mix it.";
 			return false;
+			
 		}
 		
 		

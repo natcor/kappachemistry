@@ -19,18 +19,22 @@
 </head>
 <body>
 	<!-- taken from bs -->
+  	  
     <div class="site-wrapper">
 	
       <div class="site-wrapper-inner">
-     	   <!--<div class = "navbar">
-     		   <a href = "#" class = "link">Contact</a>
-     		   <a href = "#" class = "link">About</a>
-     		   <a href = "#">Examples</a>
-     	   </div>
-		   -->
+	
         <div class="cover-container">
+		
      	 
           <div class="inner cover">
+		<!--
+  		<div class = "navbar container">
+  		  		   <a href = "#" class = "link">Contact</a>
+  		  		   <a href = "about.html" class = "link">About</a>
+  		  		   <a href = "#">Examples</a>
+  		</div>
+		-->
             <h1 class="cover-heading text-center">Kappa Chemistry</h1>
 <?php
 //Create options to be preset into the search box
@@ -46,6 +50,8 @@ $_SESSION['work'] = array(); //Variable to hold work to be shown
 $_SESSION['errors'] = array();  //Variable to hold errors throughout
 $_SESSION['transitions'] = array(); //Variable to hold charges of metals that can take more than one charge
 $_SESSION['failedEquation'] = ''; //Variable to hold failed equation to submit for later review
+$_SESSION['equation'] = array();
+$_SESSION['additional'] = array();
 
 //Require access to php pages with functions
 require('main_functions.php');
@@ -68,19 +74,24 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	$found = false;
 	if(empty($_SESSION['errors'])){
 		
-		$reactants = returnReactants($_POST['equation']);
-		$products = returnProducts($_POST['equation']);
 		
-		if( ($reactants !== $products) && (strlen($products !== 0)) && (strlen($reactants) !== 0)){
+		$_SESSION['equation'] = processEquation($_POST['equation']);
+		
+		//Temporary fix until I get the whole thing running on arrays
+		$reactants = implode(' + ', array_keys($_SESSION['equation'][0]) );
+		$products = implode(' + ', array_keys($_SESSION['equation'][1]) );
+		
+		if( ($reactants !== $products) && (strlen($products > 0)) && (strlen($reactants) > 0)){
 			$print = balanceEquation($reactants, $products);
 			$found = true;
 		}else{
-			$precipResult = getPrecipitation(returnReactants($_POST['equation']));
-			$synthesisResult = getSynthesis(returnReactants($_POST['equation']));
-			$acidResult = getAcidBase(returnReactants($_POST['equation']));
-			$combustionResult = getCombustion(returnReactants($_POST['equation']));
+			
+			$precipResult = getPrecipitation($reactants);
+			$synthesisResult = getSynthesis($reactants);
+			$acidResult = getAcidBase($reactants);
+			$combustionResult = getCombustion($reactants);
 			$results = array($precipResult, $acidResult, $synthesisResult, $combustionResult);
-			$print = formatEquation($_POST['equation']) . ' --> No Reaction';
+			$print = formatEquation($reactants) . ' --> No Reaction';
 			foreach($results as $result){
 				if($result !== false){
 					$print = $result;
@@ -89,7 +100,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				}
 			}
 		}
-		
 		
 		if(!$found){
 			$title = 'Forever and Always a Fractal of Bad Design';
@@ -121,8 +131,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 <?php
 if(isset($found)){
 	
-	if(!$found){
-		if(!empty($_SESSION['errors'])){ //If there are items in the errors array
+	if((!$found) && (empty($_SESSION['additional'])) ) {
+		if( !empty($_SESSION['errors']) ){ //If there are items in the errors array
 			$_SESSION['errors'] = array_unique($_SESSION['errors']);
 			echo '<div id = "error"><div class = "lead text-center" style="margin-top: 40px;">The following error(s) occured: <p class="error">';
 			foreach($_SESSION['errors'] as $error){
@@ -144,15 +154,42 @@ if(isset($found)){
 			$r = mysqli_query($dbc, $q);
 		}
 	}else{ //Has a result
-		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div>";
+		
+		if(!empty($_SESSION['additional'])){
+			$additional = '<td id = "oxStates"><p>Oxidation States</p>';
+			if(in_array('OXIDATION', $_SESSION['additional'])){
+			
+				foreach($_SESSION['equation'][0] as $molecule => $value){
+				
+					$additional .= "<div class = 'tableWrap'><table class = 'table' >" ;
+				
+					foreach($_SESSION['equation'][0][$molecule]['oxidation'] as $key => $num){
+						$additional .= "<tr><td>$key</td><td class = 'num'>$num</td></tr>";
+					
+					}
+					$additional .= "</table></div>";
+				
+				}
+			}
+			$additional .= '</td>';
+		}
+		
+		echo "<div id = 'results'><p class=\"text-center\" style=\"color: #e7e6fa; font-size: 23px;\">$print</p></div><table><tr>";
+		
+		if(isset($additional)){
+			echo $additional;
+		}
+		
 		if(count($_SESSION['work']) > 0){
 			$_SESSION['work'] = array_filter(array_unique($_SESSION['work']));
-			echo '<div><ul class = "work" style = "display: table; margin: 0 auto;">';
+			echo '<td class = "explanation"><div><ul class = "work" style = "display: table; margin: 0 auto;">';
 			foreach($_SESSION['work'] as $step){
 				echo '<li>' . $step . '</li>';
 			}
 		}
-		echo "</ul></div>";
+		echo "</ul></td></tr></table>";
+		
+		
 	}
 }
 	

@@ -1,5 +1,148 @@
 <?php
 
+//Pretty self explanatory basically beautifully designed but very poorly coded. So idea and method is good but not most efficient strategy.
+function oxidationStates($molecule, $charge = 0, $atom = null){
+	
+	//Pretend overall no charge
+	$A = splitEquation($molecule, null, null, true);
+	
+	//Find occurences of each value in the array
+
+	$values = array_count_values($A);
+	
+	$negativities = array();
+	foreach($values as $key => $value){
+		$negativities[$key] = getTable($key, 'electronegativity');
+	}
+	
+	//Sort in decending order
+	arsort($negativities);
+	
+	$withCharges = array();
+	
+	//Count to make sure last element left open
+	$num = 1;
+	
+	$unknown = '';
+	
+	//Assign numbers to known elements
+	foreach($negativities as $key => $value){
+		if($num < count($negativities)){
+			$withCharges[$key] = getTable($key, 'charge');
+		}else{
+			$withCharges[$key] = 'x';
+			$unknown = $key;
+		}
+		
+		//Increase the count
+		$num++;
+	}
+	
+	$xCoeff = 0;
+	$otherTotal = $charge;
+	foreach($withCharges as $key => $value){
+		if($value == 'x'){
+			$xCoeff = $values[$key];
+		}else{
+			$otherTotal -= ($values[$key] * $value);
+		}
+		
+	}
+	$xVal = $otherTotal / $xCoeff;
+	
+	$withCharges[$unknown] = $xVal;
+	
+	if($atom){
+		return $withCharges[$atom];
+	}else{
+		return $withCharges;
+	}
+}
+
+//Input either reactants or products
+//Outputs them in an array form
+
+/*
+Notes on array form:
+	-The first array holds the molecules 
+	-The second level holds the atoms, counting polyatomics as an entire atom, and the overall charge of the molecule in ['charge']
+	-The third level differs for polyatomics and normal atoms
+		-For normal atoms, [0] holds the number of that particular atom, [1] holds its oxidation state, [2] holds its charge, if any
+		-For polyatomic ions, the third level will be just like the second level for normal atoms, and the fourth level like the third
+*/
+function arrayForm($string){
+	
+	//Make temporary array of molecules 
+	$molecules = splitEquation($string, 2);
+	
+	//Create final array variable
+	$A = array();
+	
+	foreach($molecules as $molecule){
+		$A[$molecule] = array();
+		$atoms = splitEquation($molecule);
+		
+		$A[$molecule]['charge'] = isolateCharge($molecule);
+		$A[$molecule]['oxidation'] = array();
+		
+		foreach($atoms as $atom){
+			
+			$A[$molecule][] = $atom;
+			
+			if(in_array($atom, array_keys(getTable(null, null, 'polyatomics'))) ){
+	
+				$nums = oxidationStates($atom, getTable($atom, 'charge'));
+				
+				$A[$molecule]['oxidation'] = array_merge( $A[$molecule]['oxidation'], $nums);
+				
+			}else{
+				$A[$molecule]['oxidation'][$atom] = oxidationStates($molecule, $A[$molecule]['charge'], $atom);
+			}
+			
+		}
+	}
+
+	return $A;
+}
+
+/*
+	@param $molecule = the string of the molecule that needs to have its atoms oxidation states determined
+	@param $atom = the specific atom that the oxidation state needs to be determined for
+
+	@return an array if $atom not specified, otherwise an integer value
+ 	@DEPRECATED
+
+function oxidationNumber($molecule, $atom = null){
+	
+	//Array to hold numbers and keys
+	$A = array();
+	
+	//Check if molecule is in its elemental form
+	if(count(array_unique(splitEquation($molecule, 4, true, true))) == 1){
+		echo 'Elemental!';
+		
+		$charge = isolateCharge($molecule);
+		
+		$A[$molecule] = 0;
+		
+		if($atom){
+			return 0;
+		}
+		return $A; 
+	}
+}
+*/
+
+/*
+	@param atom or molecule whos charge needs to be grabbed
+	@returns numeric charge without plus sign, will have negative sign
+*/
+
+function isolateCharge($molecule){
+	
+	return 0;
+	
+}
 //Takes the input of a reaction that may or may not have a reaction arrow or other symbol
 //Returns only the reactant equation
 function returnReactants($input){
@@ -34,10 +177,10 @@ function returnProducts($input){
 			//Return the input without the sign, and no spaces
 			return trim(substr($input, strpos($input, $sign) + strlen($sign)));
 		}
-	};
+	}
 	
-	//If no sign, return the reactants
-	return $input;
+	//If no sign, return an empty string
+	return '';
 }
 
 //Converts and words to their corresponding atoms
@@ -214,10 +357,10 @@ function isValid($input){
 /*
 
 Takes input of equation and a level and returns and array. Splits equation to a certain extent based on level. All returns are in the form of arrays.
-	Level 1: split to molecules with coefficients. 
-	Level 2: split to molecules without coefficients, but appropriate number of molecules (i.e. 2NaCl turns into NaCl, NaCl).
-	Level 3: split to atoms but ignoring number (i.e. Cl2)
-	Level 4 (default): split to atoms including numbers (i.e. Cl2 turns into Cl, Cl)
+	@Level 1: split to molecules with coefficients. 
+	@Level 2: split to molecules without coefficients, but appropriate number of molecules (i.e. 2NaCl turns into NaCl, NaCl).
+	@Level 3: split to atoms but ignoring number (i.e. Cl2)
+	@Level 4 (default): split to atoms including numbers (i.e. Cl2 turns into Cl, Cl)
 
 	Account solubility by default is set to false. If set to true, then it will take into account whether molecules are soluble and will not split them.
 
@@ -284,10 +427,13 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePo
 		//Push the individual atoms to the end of the array
 		foreach(array_keys(getTable(null, null, 'polyatomics')) as $poly){
 			
+			
 			//If ignore polatomics is turned on end the loop
 			if($ignorePolyatomics !== false){
+				$molecule = strtr($molecule, array('(' => '', ')' => ''));
 				break;
 			}
+			
 			//If no polyatomic ion is found in the molecule, check for one without parenthesis
 			if(strpos($molecule, $poly) === false){
 				
@@ -296,7 +442,6 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePo
 				if(strpos($molecule, $check) !== false){
 					$molecule = str_replace($check, $poly, $molecule);
 				}
-			
 			}
 		
 			//Create variable to hold position of polyatomic
@@ -343,7 +488,7 @@ function splitEquation($equation, $level = 4, $ignoreSolublity = true, $ignorePo
 		}
 		
 		/**
-		NEED TO MAKE IT ACCOMODATE FOR THINGS LIKE C10H6
+		NEED TO MAKE IT ACCOMODATE FOR THINGS LIKE C10H6 with more than one digit number
 		*/
 
 		$tempAtoms = preg_split('/(?=[A-Z])/', $molecule);
@@ -579,8 +724,8 @@ function isSoluble($molecule, $showWork = false){
 		return true;
 	}
 	
-	//If nothing proved it soluble, assume it is insoluble.
-	return true;
+	//If nothing proved it insoluble, assume it is insoluble.
+	return false;
 }
 
 //Balance non-strong acid base
